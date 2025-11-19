@@ -1,0 +1,75 @@
+body {
+    background: #f7f7fc;
+}
+
+.carousel-item {
+    min-height: 120px;
+}
+
+.slider-title {
+    font-size: 1.15rem;
+}
+
+.slider-qty {
+    font-size: 2.5rem;
+}
+
+.card-slider {
+    min-width: 200px;
+}
+
+.modal-content {
+    background: #1a233a !important;
+}
+
+.modal-body {
+    color: #fff !important;
+}
+
+@media (max-width: 768px) {
+    .slider-qty {
+        font-size: 2rem;
+    }
+}
+
+:root {
+    /* valor por defecto (pantallas medianas) */
+    --filas-visibles: 4;
+}
+
+@media (max-width: 767.98px) {
+
+    /* móviles */
+    :root {
+        --filas-visibles: 4;
+    }
+}
+
+@media (min-width: 1400px) {
+
+    /* desktops grandes */
+    :root {
+        --filas-visibles: 7;
+    }
+}
+
+/* Opcional: aumentar tamaño de fuente en pantallas grandes */
+@media (min-width: 1200px) {
+
+    #tablaAtencion td,
+    #tablaAtencion th {
+        font-size: 1.1rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+}
+
+:root {
+  --colas-por-slide: 2;
+}
+
+@media (min-width: 1200px) {   /* pantallas grandes */
+  :root {
+    --colas-por-slide: 3;
+  }
+}

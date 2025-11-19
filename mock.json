@@ -2,11 +2,11 @@
   "colas": [
     {
       "nombre": "Caja General",
-      "cantidad": 2
+      "cantidad": 10
     },
     {
       "nombre": "Certificados",
-      "cantidad": 1
+      "cantidad": 3
     },
     {
       "nombre": "Asesoría",
@@ -20,32 +20,41 @@
   "turnosAtencion": [
     {
       "modulo": "Modulo 1",
-      "codigo": "C012",
+      "codigo": "C013",
       "nombre": "Carlos"
     },
     {
       "modulo": "Modulo 2",
       "codigo": "A045",
       "nombre": "Ana"
+    },{
+      "modulo": "Modulo 3",
+      "codigo": "C013",
+      "nombre": "Carlos"
+    },
+    {
+      "modulo": "Modulo 4",
+      "codigo": "A049",
+      "nombre": "Ana"
+    },{
+      "modulo": "Modulo 5",
+      "codigo": "C089",
+      "nombre": "Carlos"
+    },
+    {
+      "modulo": "Modulo 6",
+      "codigo": "A050",
+      "nombre": "Ana"
+    },{
+      "modulo": "Modulo 7",
+      "codigo": "C016",
+      "nombre": "Carlos"
+    },
+    {
+      "modulo": "Modulo 8",
+      "codigo": "A078",
+      "nombre": "Ana"
     }
   ],
-  "turnosEspera": [
-    {
-      "modulo": "Modulo 1",
-      "codigo": "C015",
-      "nombre": "Carlos",
-      "tipo" : "afiliado"
-    },{
-      "modulo": "Modulo 1",
-      "codigo": "C016",
-      "nombre": "Fernando",
-      "tipo" : "prioritario"
-    },{
-      "modulo": "Modulo 1",
-      "codigo": "C017",
-      "nombre": "Cristina",
-      "tipo" : "general"
-    }
-
-  ]
+  "turnosEspera": []
 }
