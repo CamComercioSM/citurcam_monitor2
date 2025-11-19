@@ -1,0 +1,51 @@
+{
+  "colas": [
+    {
+      "nombre": "Caja General",
+      "cantidad": 2
+    },
+    {
+      "nombre": "Certificados",
+      "cantidad": 1
+    },
+    {
+      "nombre": "Asesoría",
+      "cantidad": 1
+    },
+    {
+      "nombre": "PQR",
+      "cantidad": 1
+    }
+  ],
+  "turnosAtencion": [
+    {
+      "modulo": "Modulo 1",
+      "codigo": "C012",
+      "nombre": "Carlos"
+    },
+    {
+      "modulo": "Modulo 2",
+      "codigo": "A045",
+      "nombre": "Ana"
+    }
+  ],
+  "turnosEspera": [
+    {
+      "modulo": "Modulo 1",
+      "codigo": "C015",
+      "nombre": "Carlos",
+      "tipo" : "afiliado"
+    },{
+      "modulo": "Modulo 1",
+      "codigo": "C016",
+      "nombre": "Fernando",
+      "tipo" : "prioritario"
+    },{
+      "modulo": "Modulo 1",
+      "codigo": "C017",
+      "nombre": "Cristina",
+      "tipo" : "general"
+    }
+
+  ]
+}
