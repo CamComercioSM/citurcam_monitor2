@@ -97,8 +97,7 @@ function renderSliderColas(colas) {
 
         // Generar tarjetas dentro del slide
         const tarjetasHTML = grupo.map(cola => `
-    <div class="card card-slider shadow p-3 mb-2 text-center mx-auto 
-                col-10 col-md-6 col-lg-4 col-xl-3">
+    <div class="card card-slider shadow p-2 mb-2 text-center col-10 col-md-6 col-lg-4 col-xl-3">
         <div class="slider-title mb-1">${cola.nombre}</div>
         <div class="slider-qty fw-bold text-primary">${cola.cantidad}</div>
         <small>pendientes</small>
@@ -108,7 +107,7 @@ function renderSliderColas(colas) {
         // Agregar slide
         slider.innerHTML += `
       <div class="carousel-item${i === 0 ? ' active' : ''}">
-        <div class="d-flex justify-content-center gap-3">
+        <div class="d-flex justify-content-center gap-1">
           ${tarjetasHTML}
         </div>
       </div>

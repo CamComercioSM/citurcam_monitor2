@@ -32,7 +32,7 @@
       <!-- YouTube player (derecha) -->
       <div class="col-12 col-md-4 d-flex justify-content-end align-items-center pe-0">
         <div class="ratio ratio-16x9 w-100" style=" min-width: 220px;">
-          <iframe src="https://www.youtube.com/embed/videoseries?list=PLbpi6ZahtOH6Blw3rgZ08mCw5S0kWMQkE"
+          <iframe src="https://www.youtube.com/embed/watch?v=brZEANdIKMU&list=PLy0Q2cGnTqFu0FolcBCIeQI9aJK3EFVeT&index=3"
             allowfullscreen></iframe>
         </div>
       </div>
