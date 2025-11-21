@@ -1,49 +1,60 @@
-let colas = [];
-let turnosAtencion = [];
-let llamadosActivos = [];
-let llamadosExcedidos = [];
-let modalLLamado = null;
-let lastColasJson = '';
-let lastTurnosAtencionJson = '';
+let colas = [],
+    turnosAtencion = [],
+    llamadosActivos = [],
+    llamadosExcedidos = [],
+    modalLLamado = null,
+    lastColasJson = '',
+    lastTurnosAtencionJson = '';
 
 async function cargarDatos() {
     const response = await fetch('data.php');
     const data = await response.json();
 
-    // Turnos del servidor
-    const remotos = data.turnosEspera;
-
-    // 1) Convertir en sets para facilitar
+    // Turnos por llamar  del servidor
+    const remotos = data.turnosEspera || [];
+    // Limpiar estructuras con base en los turnos remotos
     const codigosRemotos = new Set(remotos.map(t => t.codigo));
+
+    // Si un código ya no existe en turnosEspera, sácalo de llamadosExcedidos
+    llamadosExcedidos = llamadosExcedidos.filter(t => codigosRemotos.has(t.codigo));
+
+    // Mapa global de conteo de llamadas, límpialo también
+    if (typeof llamadasPorTurno !== 'undefined' && llamadasPorTurno instanceof Map) {
+        for (const codigo of [...llamadasPorTurno.keys()]) {
+            if (!codigosRemotos.has(codigo)) {
+                llamadasPorTurno.delete(codigo);
+            }
+        }
+    }
+    // Convertir en sets para facilitar
     const codigosExcedidos = new Set(
         llamadosExcedidos
             .filter(t => t.llamados >= 2)
             .map(t => t.codigo)
     );
-
-    // 2) Limpiar la cola LOCAL sin perder el orden
+    // Limpiar la cola LOCAL sin perder el orden
     const nuevaCola = [];
     const codigosEnNuevaCola = new Set();
 
     for (const t of llamadosActivos) {
-        if (!codigosRemotos.has(t.codigo)) continue;
-        if (codigosExcedidos.has(t.codigo)) continue;
-        if (codigosEnNuevaCola.has(t.codigo)) continue;
+        if (!codigosRemotos.has(t.codigo)) continue;       // ya no existe en el servidor
+        if (codigosExcedidos.has(t.codigo)) continue;      // excedido
+        if (codigosEnNuevaCola.has(t.codigo)) continue;    // evitar duplicados
         nuevaCola.push(t);
         codigosEnNuevaCola.add(t.codigo);
     }
-
-    // 3) Agregar turnos NUEVOS al final
+    // Agregar turnos NUEVOS al final
     for (const t of remotos) {
         if (!codigosEnNuevaCola.has(t.codigo) && !codigosExcedidos.has(t.codigo)) {
             nuevaCola.push(t);
             codigosEnNuevaCola.add(t.codigo);
         }
     }
-
-    // 4) Ahora sí, actualizar la cola REAL
+    // Actualizar la cola REAL
     llamadosActivos = nuevaCola;
 
+
+    // Datos de colas y turnos de atención
     const nuevasColasJson = JSON.stringify(data.colas || []);
     const nuevosTurnosAtencionJson = JSON.stringify(data.turnosAtencion || []);
 
@@ -62,7 +73,6 @@ async function cargarDatos() {
         debeRenderizarTurnos = true;
     }
 
-    // Renderizar SOLO si hay cambios
     if (debeRenderizarColas) {
         renderSliderColas(colas);
     }
@@ -71,7 +81,6 @@ async function cargarDatos() {
         renderTurnosAtencion(turnosAtencion);
     }
 }
-
 
 // Renderiza slider de colas
 function renderSliderColas(colas) {
@@ -88,12 +97,13 @@ function renderSliderColas(colas) {
 
         // Generar tarjetas dentro del slide
         const tarjetasHTML = grupo.map(cola => `
-      <div class="card card-slider shadow p-3 mb-2 text-center mx-auto">
+    <div class="card card-slider shadow p-3 mb-2 text-center mx-auto 
+                col-10 col-md-6 col-lg-4 col-xl-3">
         <div class="slider-title mb-1">${cola.nombre}</div>
         <div class="slider-qty fw-bold text-primary">${cola.cantidad}</div>
         <small>pendientes</small>
-      </div>
-    `).join('');
+    </div>
+`).join('');
 
         // Agregar slide
         slider.innerHTML += `
@@ -105,8 +115,6 @@ function renderSliderColas(colas) {
     `;
     }
 }
-
-
 
 // Renderiza tabla de turnos en atención
 function renderTurnosAtencion(turnosAtencion) {
@@ -139,8 +147,6 @@ function renderTurnosAtencion(turnosAtencion) {
     });
 }
 
-
-
 // Renderiza llamados activos en el modal
 function renderLlamadosActivos(llamadosActivos) {
     const cont = document.getElementById('llamadosActivos');
@@ -165,8 +171,6 @@ function renderLlamadosActivos(llamadosActivos) {
     `;
     });
 }
-
-
 function realizarLlamado() {
     if (llamadosActivos.length === 0) {
         return setTimeout(realizarLlamado, 2000);
@@ -209,8 +213,6 @@ function realizarLlamado() {
         setTimeout(realizarLlamado, 4000);
     }, 5000);
 }
-
-
 // Inicializa todo
 document.addEventListener('DOMContentLoaded', () => {
     modalEle = document.getElementById('llamadoModal');
@@ -218,5 +220,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     realizarLlamado();
     setInterval(cargarDatos, 3000); // Actualiza cada 3 segundos 
-    setInterval(() => {renderTurnosAtencion(turnosAtencion)}, 7000);
+    setInterval(() => { renderTurnosAtencion(turnosAtencion) }, 7000);
 });

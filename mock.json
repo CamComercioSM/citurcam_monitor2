@@ -2,19 +2,19 @@
   "colas": [
     {
       "nombre": "Caja General",
-      "cantidad": 10
+      "cantidad": 5
     },
     {
       "nombre": "Certificados",
-      "cantidad": 3
+      "cantidad": 2
     },
     {
       "nombre": "Asesoría",
-      "cantidad": 1
+      "cantidad": 2
     },
     {
       "nombre": "PQR",
-      "cantidad": 1
+      "cantidad": 3
     }
   ],
   "turnosAtencion": [
@@ -27,34 +27,39 @@
       "modulo": "Modulo 2",
       "codigo": "A045",
       "nombre": "Ana"
-    },{
+    },
+    {
       "modulo": "Modulo 3",
       "codigo": "C013",
-      "nombre": "Carlos"
+      "nombre": "Juan"
     },
     {
       "modulo": "Modulo 4",
       "codigo": "A049",
-      "nombre": "Ana"
-    },{
+      "nombre": "Diego"
+    },
+    {
       "modulo": "Modulo 5",
       "codigo": "C089",
-      "nombre": "Carlos"
+      "nombre": "Liset"
     },
     {
       "modulo": "Modulo 6",
       "codigo": "A050",
-      "nombre": "Ana"
-    },{
+      "nombre": "Alberto"
+    },
+    {
       "modulo": "Modulo 7",
       "codigo": "C016",
-      "nombre": "Carlos"
+      "nombre": "Miguel"
     },
     {
       "modulo": "Modulo 8",
       "codigo": "A078",
-      "nombre": "Ana"
+      "nombre": "Sofia"
     }
   ],
-  "turnosEspera": []
+  "turnosEspera": [
+    
+  ]
 }
