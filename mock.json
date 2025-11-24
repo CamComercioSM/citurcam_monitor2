@@ -59,7 +59,20 @@
       "nombre": "Sofia"
     }
   ],
-  "turnosEspera": [
+  "turnosEsperandoLlamado": [
     
+    {
+      "modulo": "Modulo 8",
+      "codigo": "A078",
+      "nombre": "Sofia",
+      "tipo" : "General"
+    },
+    
+    {
+      "modulo": "Modulo 8",
+      "codigo": "A078",
+      "nombre": "Sofia",
+      "tipo" : "General"
+    }
   ]
 }

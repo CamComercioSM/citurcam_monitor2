@@ -1,89 +1,41 @@
-let colas = [],
-    turnosAtencion = [],
-    llamadosActivos = [],
+let turnosEnColasDeAtencion = [],
+    turnosEnAtencion = [],
+    turnosParaSerLlamados = [],
     llamadosExcedidos = [],
-    modalLLamado = null,
-    lastColasJson = '',
-    lastTurnosAtencionJson = '';
+    modalLLamado = null;
 
-async function cargarDatos() {
-    const response = await fetch('data.php');
-    const data = await response.json();
+let idxTurno = 0;
+var turnoEnLlamado = [];
+function realizarLlamado() {
 
-    // Turnos por llamar  del servidor
-    const remotos = data.turnosEspera || [];
-    // Limpiar estructuras con base en los turnos remotos
-    const codigosRemotos = new Set(remotos.map(t => t.codigo));
-
-    // Si un código ya no existe en turnosEspera, sácalo de llamadosExcedidos
-    llamadosExcedidos = llamadosExcedidos.filter(t => codigosRemotos.has(t.codigo));
-
-    // Mapa global de conteo de llamadas, límpialo también
-    if (typeof llamadasPorTurno !== 'undefined' && llamadasPorTurno instanceof Map) {
-        for (const codigo of [...llamadasPorTurno.keys()]) {
-            if (!codigosRemotos.has(codigo)) {
-                llamadasPorTurno.delete(codigo);
-            }
-        }
+    if (turnosParaSerLlamados.length === 0) {
+        idxTurno = 0;
+        return setTimeout(realizarLlamado, 1000);
     }
-    // Convertir en sets para facilitar
-    const codigosExcedidos = new Set(
-        llamadosExcedidos
-            .filter(t => t.llamados >= 2)
-            .map(t => t.codigo)
-    );
-    // Limpiar la cola LOCAL sin perder el orden
-    const nuevaCola = [];
-    const codigosEnNuevaCola = new Set();
-
-    for (const t of llamadosActivos) {
-        if (!codigosRemotos.has(t.codigo)) continue;       // ya no existe en el servidor
-        if (codigosExcedidos.has(t.codigo)) continue;      // excedido
-        if (codigosEnNuevaCola.has(t.codigo)) continue;    // evitar duplicados
-        nuevaCola.push(t);
-        codigosEnNuevaCola.add(t.codigo);
-    }
-    // Agregar turnos NUEVOS al final
-    for (const t of remotos) {
-        if (!codigosEnNuevaCola.has(t.codigo) && !codigosExcedidos.has(t.codigo)) {
-            nuevaCola.push(t);
-            codigosEnNuevaCola.add(t.codigo);
-        }
-    }
-    // Actualizar la cola REAL
-    llamadosActivos = nuevaCola;
-
-
-    // Datos de colas y turnos de atención
-    const nuevasColasJson = JSON.stringify(data.colas || []);
-    const nuevosTurnosAtencionJson = JSON.stringify(data.turnosAtencion || []);
-
-    let debeRenderizarColas = false;
-    let debeRenderizarTurnos = false;
-
-    if (nuevasColasJson !== lastColasJson) {
-        colas = data.colas || [];
-        lastColasJson = nuevasColasJson;
-        debeRenderizarColas = true;
+    if (idxTurno > turnosEnColasDeAtencion.length) {
+        idxTurno = 0;
+        setTimeout(realizarLlamado, 1000);
     }
 
-    if (nuevosTurnosAtencionJson !== lastTurnosAtencionJson) {
-        turnosAtencion = data.turnosAtencion || [];
-        lastTurnosAtencionJson = nuevosTurnosAtencionJson;
-        debeRenderizarTurnos = true;
+    turnoEnLlamado = turnosParaSerLlamados[idxTurno];
+    if (!turnoEnLlamado) {
+        idxTurno = 0;
+        return setTimeout(realizarLlamado, 1000);
     }
-
-    if (debeRenderizarColas) {
-        renderSliderColas(colas);
-    }
-
-    if (debeRenderizarTurnos) {
-        renderTurnosAtencion(turnosAtencion);
-    }
+    realizandoLlamadoDeTurno(turnoEnLlamado);
+    renderLlamadosActivos(turnosParaSerLlamados);
+    modalLLamado.show();
+    setTimeout(() => {
+        renderLlamadosActivos([]);
+        modalLLamado.hide();
+        idxTurno = idxTurno + 1;
+        console.log(idxTurno)
+        setTimeout(realizarLlamado, 1500);
+    }, 5000);
 }
 
 // Renderiza slider de colas
-function renderSliderColas(colas) {
+function renderSliderColasDeAtencion() {
     const slider = document.getElementById('sliderColas');
     slider.innerHTML = '';
 
@@ -92,8 +44,8 @@ function renderSliderColas(colas) {
     const porSlide = parseInt(estilos.getPropertyValue('--colas-por-slide')) || 2;
 
     // Agrupar colas en slides
-    for (let i = 0; i < colas.length; i += porSlide) {
-        const grupo = colas.slice(i, i + porSlide);
+    for (let i = 0; i < turnosEnColasDeAtencion.length; i += porSlide) {
+        const grupo = turnosEnColasDeAtencion.slice(i, i + porSlide);
 
         // Generar tarjetas dentro del slide
         const tarjetasHTML = grupo.map(cola => `
@@ -116,7 +68,7 @@ function renderSliderColas(colas) {
 }
 
 // Renderiza tabla de turnos en atención
-function renderTurnosAtencion(turnosAtencion) {
+function renderTablaTurnosEnAtencion() {
     const tbody = document.getElementById('tablaAtencion');
     tbody.innerHTML = '';
 
@@ -125,14 +77,14 @@ function renderTurnosAtencion(turnosAtencion) {
     const maxFilas = parseInt(estilos.getPropertyValue('--filas-visibles')) || 5;
 
     // Si el array excede lo visible → rotar el array
-    if (turnosAtencion.length > maxFilas) {
+    if (turnosEnAtencion.length > maxFilas) {
         // MOVER EL PRIMERO AL FINAL (rotación simple)
-        const primero = turnosAtencion.shift();
-        turnosAtencion.push(primero);
+        const primero = turnosEnAtencion.shift();
+        turnosEnAtencion.push(primero);
     }
 
     // Tomar solo las filas visibles
-    const visibles = turnosAtencion.slice(0, maxFilas);
+    const visibles = turnosEnAtencion.slice(0, maxFilas);
 
     // Render normal
     visibles.forEach(turno => {
@@ -147,7 +99,7 @@ function renderTurnosAtencion(turnosAtencion) {
 }
 
 // Renderiza llamados activos en el modal
-function renderLlamadosActivos(llamadosActivos) {
+function renderLlamadosActivos(llamadosActivosPorRenderizar) {
     const cont = document.getElementById('llamadosActivos');
     cont.innerHTML = '';
 
@@ -157,7 +109,7 @@ function renderLlamadosActivos(llamadosActivos) {
         afiliado: 'bg-success',
         general: 'bg-primary'
     };
-    llamadosActivos.forEach(llamado => {
+    llamadosActivosPorRenderizar.forEach(llamado => {
         // Elegimos el color; si no existe tipo, usamos general
         const color = colores[llamado.tipo] || 'bg-primary';
 
@@ -170,54 +122,210 @@ function renderLlamadosActivos(llamadosActivos) {
     `;
     });
 }
-function realizarLlamado() {
-    if (llamadosActivos.length === 0) {
-        return setTimeout(realizarLlamado, 2000);
+
+window.realizandoLlamadoDeTurno = function (turno) {
+    console.log('se esta llamando a...', turno.nombre);
+}
+
+window.conectarseEndPoint = async function (operacion, params = {}) {
+    const api = 'data.php?';
+    const searchParams = new URLSearchParams({
+        operacion: operacion || '',
+        ...params
+    });
+    const response = await fetch(api + searchParams.toString());
+    if (!response.ok) {
+        throw new Error('Error en la petición: ' + response.status);
     }
+    const data = await response.json();
+    return data;
+}
+//actualiza la cola de turnos que generan el llamado de modal
+window.actualizarColaTurnosParaSerLlamandos = async function () {
+    const turnosParaLlamar = await conectarseEndPoint('turnosParaSerLlamados');
+    if (turnosParaLlamar === turnosParaSerLlamados) return;
+    turnosParaSerLlamados = turnosParaLlamar.turnosParaSerLlamados || [];
+}
+// Actualiza el slider de colas de turnos
+window.actualizarTurnosEnColaDeAtencion = async function () {
+    const colasDeAtencion = await conectarseEndPoint('turnosEnColasDeAtencion');
+    if (colasDeAtencion === turnosEnColasDeAtencion) return;
+    turnosEnColasDeAtencion = colasDeAtencion.turnosEnColasDeAtencion || [];
+    renderSliderColasDeAtencion();
+}
+// Actualiza la tabla de turnos que estan siendo atendidos
+window.actualizarColaTurnosEnAtencion = async function () {
+    const turnosParaTablaDeAtencion = await conectarseEndPoint('turnosEnAtencion');
+    if (turnosParaTablaDeAtencion === turnosEnAtencion) return;
+    turnosEnAtencion = turnosParaTablaDeAtencion.turnosEnAtencion || [];
+    renderTablaTurnosEnAtencion();
+}
 
-    const turno = llamadosActivos.shift();
-    if (!turno) {
-        return setTimeout(realizarLlamado, 3000);
+
+
+function registroAccionesConsola(TXT = "") {
+    let fecha = new Date();
+    document.getElementById('consola').innerHTML += ((fecha.toLocaleTimeString() + '; ' + TXT) + " <br /> ");
+    console.log(TXT);
+}
+
+var reproduciendo = false;
+window.idAleatorio = function () {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (var i = 0; i < 5; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    return text;
+}
+window.hablar = function (textoParaDecir, idPersona = idAleatorio()) {
+    if (textoParaDecir != "") {
+        solicitarTextoAVoz(textoParaDecir, idPersona);
     }
+}
 
-    let llamadoExistente = llamadosExcedidos.find(t => t.codigo === turno.codigo);
-
-    if (llamadoExistente && llamadoExistente.llamados >= 2) {
-        // ya excedido, no se reencola
-        return setTimeout(realizarLlamado, 5000);
-    }
-
-    if (llamadoExistente) {
-        llamadoExistente.llamados += 1;
-    } else {
-        llamadosExcedidos.push({
-            ...turno,
-            llamados: 1
+// Se recomienda envolver el llamado en una función async para usar await
+async function solicitarTextoAVoz(textoParaDecir, idPersona) {
+    try {
+        // Llamada POST al endpoint usando fetch
+        const response = await fetch("https://monitor.citurcam.com/apis/text-to-speech.php", {
+            method: "POST",
+            headers: {
+                // Formato de envío tipo formulario tradicional
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                texto: textoParaDecir,
+                persona: idPersona
+            }),
+            // Los siguientes parámetros de jQuery no aplican en fetch:
+            // async: true, cache: true, timeout: 234567
         });
+
+        // Leer la respuesta como texto (puede ser la URL o datos del MP3)
+        const respuesta = await response.text();
+
+        reproducirRespuestaAPI(respuesta);
+        console.log(reproductoresVOZ);
+
+        // Retornar si se necesita la respuesta para otros usos
+        return respuesta;
+
+    } catch (error) {
+        // Manejo de errores de red o de servidor
+        console.error('Error al solicitar texto a voz:', error);
     }
+}
 
-    renderLlamadosActivos([turno]);
-    modalLLamado.show();
 
-    setTimeout(() => {
-        renderLlamadosActivos([]);
-        modalLLamado.hide();
-
-        // solo lo reinsertamos si aún no está excedido
-        const exedido = llamadosExcedidos.find(t => t.codigo === turno.codigo);
-        if (!(exedido && exedido.llamados >= 2)) {
-            llamadosActivos.splice(1, 0, turno);
+function decirDatosTurnoLlamando() {
+    if (turnosParaSerLlamados.length > 0) {
+        if (turnosParaSerLlamados[idxTurno]) {
+            $textoHablar = "llamando al turno " + turnoEnLlamado.codigo;
+            hablar($textoHablar, turnoEnLlamado.codigo);
+        }
+    } else {
+        codigoTurnoEnLLamado = null;
+        //hablar("");
+    }
+    setTimeout(decirDatosTurnoLlamando, 3210);
+    ////console.log("hablar "+ diciendo );
+}
+var reproductoresVOZ = [];
+window.reproducirRespuestaAPI = function (respuesta) {
+    if (respuesta) {
+        var datos = JSON.parse(respuesta);
+        if (reproductoresVOZ.length) {
+            var reproductor = reproductoresVOZ[datos.id];
+        } else {
+            reproductoresVOZ[datos.id] = document.createElement('audio');
+            reproductoresVOZ[datos.id].setAttribute('id', "sonidoEspanola" + datos.id);
+            reproductoresVOZ[datos.id].setAttribute('src', datos.audio);
+            reproductoresVOZ[datos.id].autoplay = true;
+            reproductoresVOZ[datos.id].muted = true;
+            reproductoresVOZ[datos.id].addEventListener("loadeddata", (event) => {
+                console.log('va hablar primera vez ' + datos.id);
+                reproducirVOZ(datos.id);
+            });
         }
 
-        setTimeout(realizarLlamado, 4000);
-    }, 5000);
+        console.log()
+    }
 }
+
+function reproducirVOZ(idGenerado) {
+    var media = reproductoresVOZ[idGenerado];
+    //    console.log("objeto reproductor generado");
+    if (media) {
+        media.volume = 1;
+        media.muted = false;
+        const playPromise = media.play();
+        //        console.log(playPromise);
+        const promise2 = playPromise.then(
+            function () {
+                if (!reproduciendo) {
+                    reproduciendo = true;
+                    registroAccionesConsola("REPRODUCIENDO MP3 de la española nuevamente " + idGenerado + "");
+                    reproduciendo = false;
+                }
+            },
+            function () {
+                playPromise.catch((error) => {
+                    if (error) {
+                        registroAccionesConsola("intentando cargar MP3 de la española nuevamente " + idGenerado);
+                        setTimeout(function () {
+                            reproducirVOZ(idGenerado);
+                        }, 1234);
+                    }
+                });
+            }
+        );
+
+
+        //        if (playPromise !== null) {
+        //            playPromise.catch((error) => {
+        //                if (error) {
+        //                    registroAccionesConsola("intentando cargar MP3 de la española nuevamente " + idGenerado);
+        //                    setTimeout(function () {
+        //                        reproducirVOZ(idGenerado);
+        //                    }, 1234);
+        //                }
+        //            });
+        //        } else {
+        ////            if (!reproduciendo) {
+        //            registroAccionesConsola("REPRODUCIENDO MP3 de la española nuevamente " + idGenerado + "");
+        //            reproduciendo = true;
+        //            media.volume = 1;
+        //            media.muted = false;
+        //            media.play();
+        //            reproduciendo = false;
+        ////            }
+        //        }
+    }
+}
+
+
+
+
 // Inicializa todo
 document.addEventListener('DOMContentLoaded', () => {
     modalEle = document.getElementById('llamadoModal');
     modalLLamado = new bootstrap.Modal(modalEle);
-
+    //Llamado periodico que verifica los turnos para llamar
+    setInterval(() => {
+        actualizarColaTurnosParaSerLlamandos();
+    }, 3000);
     realizarLlamado();
-    setInterval(cargarDatos, 3000); // Actualiza cada 3 segundos 
-    setInterval(() => { renderTurnosAtencion(turnosAtencion) }, 7000);
+    // Llanado periordico que verifica las colas de atencion y las actualiza el slider si es necesario
+    setInterval(() => {
+        actualizarTurnosEnColaDeAtencion();
+    }, 3000);
+    // Llamado periodico que actualiza la tabla de turnos que estan siendo atendidos
+    setInterval(() => {
+        actualizarColaTurnosEnAtencion();
+    }, 3000);
+
+    setTimeout(() => {
+        decirDatosTurnoLlamando();
+    }, 3210);
+
 });

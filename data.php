@@ -1,11 +1,10 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
-
+$op = $_GET['operacion'] ?? [];
 // === 1. Fuente actual (mock local) ===
 // En el futuro esto apuntará a una API real:
 // $source = "https://api.miempresa.com/datos";
-$source = __DIR__. '/mock.json';
-
+$source = __DIR__ . '/' . $op . '.json';
 // === 2. Leer la fuente ===
 $data = @file_get_contents($source);
 

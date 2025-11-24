@@ -1,0 +1,20 @@
+{
+  "turnosEnColasDeAtencion": [
+    {
+      "nombre": "Caja General",
+      "cantidad": 60
+    },
+    {
+      "nombre": "Certificados",
+      "cantidad": 2
+    },
+    {
+      "nombre": "Asesoría",
+      "cantidad": 2
+    },
+    {
+      "nombre": "PQR",
+      "cantidad": 3
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+    "turnosEnAtencion": [
+        {
+            "modulo": "Modulo 1",
+            "codigo": "C013",
+            "nombre": "Carlos"
+        },
+        {
+            "modulo": "Modulo 2",
+            "codigo": "A045",
+            "nombre": "Ana"
+        },
+        {
+            "modulo": "Modulo 3",
+            "codigo": "C013",
+            "nombre": "Juan"
+        },
+        {
+            "modulo": "Modulo 4",
+            "codigo": "A049",
+            "nombre": "Diego"
+        },
+        {
+            "modulo": "Modulo 5",
+            "codigo": "C089",
+            "nombre": "Liset"
+        },
+        {
+            "modulo": "Modulo 6",
+            "codigo": "A050",
+            "nombre": "Alberto"
+        },
+        {
+            "modulo": "Modulo 7",
+            "codigo": "C017",
+            "nombre": "Miguel"
+        },
+        {
+            "modulo": "Modulo 8",
+            "codigo": "A079",
+            "nombre": "Sofia"
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "turnosParaSerLlamados": [{
+      "modulo": "Modulo 5",
+      "codigo": "A078",
+      "nombre": "Sofia",
+      "tipo" : "General"
+    },{
+      "modulo": "Modulo 6",
+      "codigo": "A079",
+      "nombre": "Diego",
+      "tipo" : "General"
+    },{
+      "modulo": "Modulo 4",
+      "codigo": "A081",
+      "nombre": "Juan",
+      "tipo" : "General"
+    }]
+}
