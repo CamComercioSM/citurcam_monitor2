@@ -2,9 +2,7 @@ let colas = [],
     turnosAtencion = [],
     llamadosActivos = [],
     llamadosExcedidos = [],
-    modalLLamado = null,
-    lastColasJson = '',
-    lastTurnosAtencionJson = '';
+    modalLLamado = null;
 
 
 

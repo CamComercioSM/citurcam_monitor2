@@ -2,14 +2,16 @@ let turnosEnColasDeAtencion = [],
     turnosEnAtencion = [],
     turnosParaSerLlamados = [],
     llamadosExcedidos = [],
-    modalLLamado = null;
+    modalLLamado = null,
+    idxTurno = 0,
+    turnoEnLlamado = [];
 
-let idxTurno = 0;
-var turnoEnLlamado = [];
 function realizarLlamado() {
 
     if (turnosParaSerLlamados.length === 0) {
         idxTurno = 0;
+        reproductoresVOZ = [];
+        modalLLamado.hide();
         return setTimeout(realizarLlamado, 1000);
     }
     if (idxTurno > turnosEnColasDeAtencion.length) {
@@ -22,15 +24,16 @@ function realizarLlamado() {
         idxTurno = 0;
         return setTimeout(realizarLlamado, 1000);
     }
-    realizandoLlamadoDeTurno(turnoEnLlamado);
+
     renderLlamadosActivos(turnosParaSerLlamados);
+    decirDatosTurnoLlamando(turnoEnLlamado);
+
     modalLLamado.show();
+
     setTimeout(() => {
         renderLlamadosActivos([]);
-        modalLLamado.hide();
-        idxTurno = idxTurno + 1;
-        console.log(idxTurno)
-        setTimeout(realizarLlamado, 1500);
+        idxTurno += 1;
+        setTimeout(realizarLlamado, 4000);
     }, 5000);
 }
 
@@ -100,14 +103,15 @@ function renderTablaTurnosEnAtencion() {
 
 // Renderiza llamados activos en el modal
 function renderLlamadosActivos(llamadosActivosPorRenderizar) {
+    if(llamadosActivosPorRenderizar !== turnosParaSerLlamados) return;
     const cont = document.getElementById('llamadosActivos');
     cont.innerHTML = '';
 
     // Definimos los colores por tipo
     const colores = {
-        prioritario: 'bg-danger',
-        afiliado: 'bg-success',
-        general: 'bg-primary'
+        Prioritario: 'bg-danger',
+        Afiliado: 'bg-success',
+        General: 'bg-primary'
     };
     llamadosActivosPorRenderizar.forEach(llamado => {
         // Elegimos el color; si no existe tipo, usamos general
@@ -123,8 +127,8 @@ function renderLlamadosActivos(llamadosActivosPorRenderizar) {
     });
 }
 
-window.realizandoLlamadoDeTurno = function (turno) {
-    console.log('se esta llamando a...', turno.nombre);
+window.realizandoLlamadoDeTurno = async function (turno) {
+    
 }
 
 window.conectarseEndPoint = async function (operacion, params = {}) {
@@ -145,6 +149,7 @@ window.actualizarColaTurnosParaSerLlamandos = async function () {
     const turnosParaLlamar = await conectarseEndPoint('turnosParaSerLlamados');
     if (turnosParaLlamar === turnosParaSerLlamados) return;
     turnosParaSerLlamados = turnosParaLlamar.turnosParaSerLlamados || [];
+    llamadosExcedidos = turnosParaSerLlamados;
 }
 // Actualiza el slider de colas de turnos
 window.actualizarTurnosEnColaDeAtencion = async function () {
@@ -161,14 +166,11 @@ window.actualizarColaTurnosEnAtencion = async function () {
     renderTablaTurnosEnAtencion();
 }
 
-
-
-function registroAccionesConsola(TXT = "") {
-    let fecha = new Date();
-    document.getElementById('consola').innerHTML += ((fecha.toLocaleTimeString() + '; ' + TXT) + " <br /> ");
-    console.log(TXT);
-}
-
+// function registroAccionesConsola(TXT = "") {
+//     let fecha = new Date();
+//     document.getElementById('consola').innerHTML += ((fecha.toLocaleTimeString() + '; ' + TXT) + " <br /> ");
+//     console.log(TXT);
+// }
 var reproduciendo = false;
 window.idAleatorio = function () {
     var text = "";
@@ -216,16 +218,22 @@ async function solicitarTextoAVoz(textoParaDecir, idPersona) {
     }
 }
 
+function decirDatosTurnoLlamando(turnoEnLlamado) {
 
-function decirDatosTurnoLlamando() {
+    if((turnosParaSerLlamados.length) === 0) return;
     if (turnosParaSerLlamados.length > 0) {
-        if (turnosParaSerLlamados[idxTurno]) {
-            $textoHablar = "llamando al turno " + turnoEnLlamado.codigo;
+        if (turnoEnLlamado) {
+            $textoHablar = "Llamando al turno " + turnoEnLlamado.codigo;
             hablar($textoHablar, turnoEnLlamado.codigo);
+            if(reproductoresVOZ[turnoEnLlamado.codigo]){
+                var audio = reproductoresVOZ[turnoEnLlamado.codigo];
+                audio.volume = 1;
+                audio.muted = false;
+                audio.load();
+                audio.play();
+            }
+            //reproducirVOZ(turnoEnLlamado.codigo);
         }
-    } else {
-        codigoTurnoEnLLamado = null;
-        //hablar("");
     }
     setTimeout(decirDatosTurnoLlamando, 3210);
     ////console.log("hablar "+ diciendo );
@@ -244,11 +252,8 @@ window.reproducirRespuestaAPI = function (respuesta) {
             reproductoresVOZ[datos.id].muted = true;
             reproductoresVOZ[datos.id].addEventListener("loadeddata", (event) => {
                 console.log('va hablar primera vez ' + datos.id);
-                reproducirVOZ(datos.id);
             });
         }
-
-        console.log()
     }
 }
 
@@ -264,14 +269,14 @@ function reproducirVOZ(idGenerado) {
             function () {
                 if (!reproduciendo) {
                     reproduciendo = true;
-                    registroAccionesConsola("REPRODUCIENDO MP3 de la española nuevamente " + idGenerado + "");
+                    //registroAccionesConsola("REPRODUCIENDO MP3 de la española nuevamente " + idGenerado + "");
                     reproduciendo = false;
                 }
             },
             function () {
                 playPromise.catch((error) => {
                     if (error) {
-                        registroAccionesConsola("intentando cargar MP3 de la española nuevamente " + idGenerado);
+                        //registroAccionesConsola("intentando cargar MP3 de la española nuevamente " + idGenerado);
                         setTimeout(function () {
                             reproducirVOZ(idGenerado);
                         }, 1234);
@@ -303,13 +308,12 @@ function reproducirVOZ(idGenerado) {
     }
 }
 
-
-
-
 // Inicializa todo
 document.addEventListener('DOMContentLoaded', () => {
     modalEle = document.getElementById('llamadoModal');
     modalLLamado = new bootstrap.Modal(modalEle);
+
+    
     //Llamado periodico que verifica los turnos para llamar
     setInterval(() => {
         actualizarColaTurnosParaSerLlamandos();
@@ -323,9 +327,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
         actualizarColaTurnosEnAtencion();
     }, 3000);
-
     setTimeout(() => {
-        decirDatosTurnoLlamando();
-    }, 3210);
+        decirDatosTurnoLlamando(turnoEnLlamado);
+    }, 5000);
 
 });

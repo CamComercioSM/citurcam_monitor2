@@ -1,18 +1,13 @@
 {
     "turnosParaSerLlamados": [{
       "modulo": "Modulo 5",
-      "codigo": "A078",
-      "nombre": "Sofia",
-      "tipo" : "General"
-    },{
-      "modulo": "Modulo 6",
-      "codigo": "A079",
-      "nombre": "Diego",
-      "tipo" : "General"
+      "codigo": "A083",
+      "nombre": "Juan",
+      "tipo" : "Prio"
     },{
       "modulo": "Modulo 4",
-      "codigo": "A081",
+      "codigo": "A082",
       "nombre": "Juan",
-      "tipo" : "General"
+      "tipo" : "Afiliado"
     }]
 }
