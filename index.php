@@ -93,24 +93,29 @@
   <div class="modal fade" id="configModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
+
         <form id="formConfigPantalla">
+
           <div class="modal-header">
             <h5 class="modal-title">Configuración de pantalla</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="configSede" class="form-label">Sede</label>
-              <select class="form-select" id="configSede">
-                <option value="">Selecciona una sede...</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="configZona" class="form-label">Zona de atención</label>
-              <select class="form-select" id="configZona">
-                <option value="">Selecciona la zona...</option>
-              </select>
-            </div>
+          <!-- Aquí tu JS va a inyectar todo -->
+          <div class="modal-body-config" id="configModalBody">
+            <div class="modal-body">
+
+          <div class="mb-3">
+            <label for="tiempoLlamadosSlider" class="form-label">Tiempo llamados Slider (ms)</label>
+            <input type="number" class="form-control" id="tiempoLlamadosSlider" min="0">
+          </div>
+          <div class="mb-3">
+            <label for="tiempoLlamadosTurnosAtencion" class="form-label">Tiempo llamados Turnos Atención (ms)</label>
+            <input type="number" class="form-control" id="tiempoLlamadosTurnosAtencion" min="0">
+          </div>
+          <div class="mb-3">
+            <label for="tiempoTurnosParaLlamar" class="form-label">Tiempo turnos para llamar (ms)</label>
+            <input type="number" class="form-control" id="tiempoTurnosParaLlamar" min="0">
+          </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -154,8 +159,7 @@
     });
   </script>
 
-
-
 </body>
+
 
 </html>

@@ -89,34 +89,6 @@ function renderSliderColasDeAtencion() {
             }
         });
     }
-
-
-    //     // Obtener cantidad por slide desde CSS
-    //     const estilos = getComputedStyle(document.documentElement);
-    //     const porSlide = parseInt(estilos.getPropertyValue('--colas-por-slide')) || 2;
-
-    //     // Agrupar colas en slides
-    //     for (let i = 0; i < turnosEnColasDeAtencion.length; i += porSlide) {
-    //         const grupo = turnosEnColasDeAtencion.slice(i, i + porSlide);
-
-    //         // Generar tarjetas dentro del slide
-    //         const tarjetasHTML = grupo.map(cola => `
-    //     <div class="card card-slider shadow p-2 mb-2 text-center col-10 col-md-6 col-lg-4 col-xl-3">
-    //         <div class="slider-title mb-1">${cola.nombre}</div>
-    //         <div class="slider-qty fw-bold text-primary">${cola.cantidad}</div>
-    //         <small>pendientes</small>
-    //     </div>
-    // `).join('');
-
-    //         // Agregar slide
-    //         slider.innerHTML += `
-    //       <div class="carousel-item${i === 0 ? ' active' : ''}">
-    //         <div class="d-flex justify-content-center gap-1">
-    //           ${tarjetasHTML}
-    //         </div>
-    //       </div>
-    //     `;
-    //     }
 }
 
 // Renderiza tabla de turnos en atención
@@ -176,6 +148,12 @@ function renderLlamadosActivos(llamadosActivosPorRenderizar) {
     });
 }
 
+function renderInfoParaConfiguracionesEnModal(){
+    let formConfig = document.getElementById('formConfigPantalla');
+
+
+}
+
 window.conectarseEndPoint = async function (operacion, params = {}) {
     const api = 'data.php?';
     const searchParams = new URLSearchParams({
@@ -211,6 +189,15 @@ window.actualizarColaTurnosEnAtencion = async function () {
     renderTablaTurnosEnAtencion();
 }
 
+window.actualizarDatosParaVariablesEnLocalStorage = async function(){
+    const infoParaConfiguraciones = await conectarseEndPoint('infoParaConfiguracion');
+    const sedes = infoParaConfiguraciones.sedes || [];
+    const zonas = infoParaConfiguraciones.zonas || [];
+
+    console.log('sedes', sedes);
+    console.log('actualizando...');
+}
+
 // function registroAccionesConsola(TXT = "") {
 //     let fecha = new Date();
 //     document.getElementById('consola').innerHTML += ((fecha.toLocaleTimeString() + '; ' + TXT) + " <br /> ");
@@ -229,7 +216,6 @@ window.hablar = function (textoParaDecir, idPersona = idAleatorio()) {
         solicitarTextoAVoz(textoParaDecir, idPersona);
     }
 }
-
 // Se recomienda envolver el llamado en una función async para usar await
 async function solicitarTextoAVoz(textoParaDecir, idPersona) {
     try {
@@ -408,10 +394,26 @@ function abrirPantallaCompletaVideoYoutube() {
     }
 }
 
+function guardarVariablesCofiguracion(e) {
+    e.preventDefault();
+    var tiempoLlamadosSlider = document.getElementById('tiempoLlamadosSlider').value;
+    var tiempoLlamadosTurnosAtencion = document.getElementById('tiempoLlamadosTurnosAtencion').value;
+    var tiempoTurnosParaLlamar = document.getElementById('tiempoTurnosParaLlamar').value;
+
+    localStorage.setItem('tiempoLlamadosSlider', tiempoLlamadosSlider);
+    localStorage.setItem('tiempoLlamadosTurnosAtencion', tiempoLlamadosTurnosAtencion);
+    localStorage.setItem('tiempoTurnosParaLlamar', tiempoTurnosParaLlamar);
+
+    var modal = bootstrap.Modal.getInstance(document.getElementById('configModal'));
+    modal.hide();
+}
+
 // Inicializa todo
 document.addEventListener('DOMContentLoaded', () => {
     modalEle = document.getElementById('llamadoModal');
     modalLLamado = new bootstrap.Modal(modalEle);
+
+    document.getElementById('formConfigPantalla').addEventListener("submit", guardarVariablesCofiguracion);
 
 
     //Llamado periodico que verifica los turnos para llamar
@@ -430,7 +432,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         decirDatosTurnoLlamando(turnoEnLlamado);
     }, 5000);
-
 
     setTimeout(abrirPantallaCompletaVideoYoutube, 7000);
 
