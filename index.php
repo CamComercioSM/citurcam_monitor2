@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap 5 CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
   <link href="style.css" rel="stylesheet">
 </head>
 
@@ -16,23 +17,19 @@
     <div class="row m-0 px-2 py-2 align-items-center" style="height: 45vh; min-height: 150px;">
       <!-- Slider colas (izquierda) -->
       <div class="col-12 col-md-7 d-flex justify-content-start align-items-center">
-        <div id="colasSlider" class="carousel slide w-100 h-100" data-bs-ride="carousel">
-          <div class="carousel-inner h-100" id="sliderColas">
-            <!-- Renderizado por JS -->
+        <div id="colasSlider" class="splide w-100 h-100">
+          <div class="splide__track h-100">
+            <ul class="splide__list h-100" id="sliderColas">
+              <!-- Renderizado por JS (li.splide__slide) -->
+            </ul>
           </div>
-          <button class="carousel-control-prev" type="button" data-bs-target="#colasSlider" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#colasSlider" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-          </button>
         </div>
       </div>
 
       <!-- YouTube player (derecha) -->
       <div class="col-12 col-md-4 d-flex justify-content-end align-items-center pe-0">
         <div class="ratio ratio-16x9 w-100" style=" min-width: 220px;">
-          <iframe src="https://www.youtube.com/embed/watch?v=brZEANdIKMU&list=PLy0Q2cGnTqFu0FolcBCIeQI9aJK3EFVeT&index=3"
+          <iframe id="videoPlayList" src="https://www.youtube.com/embed/brZEANdIKMU?list=PLy0Q2cGnTqFu0FolcBCIeQI9aJK3EFVeT&index=3&enablejsapi=1"
             allowfullscreen></iframe>
         </div>
       </div>
@@ -128,6 +125,8 @@
   <!-- Bootstrap Bundle + Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script src="turnos.js"></script>
 
 
@@ -136,24 +135,24 @@
     The “audio” tag is not supported by your browser.
   </audio>
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  setTimeout(() => {
-    
-    var audio = document.getElementById('vozCaidaInternet');
-    if (audio) {
-        // Intenta reproducir el audio automáticamente
-        audio.play().catch(function(err){
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      setTimeout(() => {
+
+        var audio = document.getElementById('vozCaidaInternet');
+        if (audio) {
+          // Intenta reproducir el audio automáticamente
+          audio.play().catch(function(err) {
             // Si el navegador bloquea el autoplay, puedes manejar el error aquí
             // Por ejemplo, mostrar un mensaje o intentar un segundo play tras interacción de usuario
             console.log("Autoplay bloqueado:", err);
-        });
-    }
+          });
+        }
 
-  }, 1234);
-    
-});
-</script>
+      }, 1234);
+
+    });
+  </script>
 
 
 

@@ -2,7 +2,7 @@
   "turnosEnColasDeAtencion": [
     {
       "nombre": "Caja General",
-      "cantidad": 60
+      "cantidad": 47
     },
     {
       "nombre": "Certificados",
@@ -15,6 +15,10 @@
     {
       "nombre": "PQR",
       "cantidad": 3
+    },
+    {
+      "nombre": "Citas",
+      "cantidad": 9
     }
   ]
 }
