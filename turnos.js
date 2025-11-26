@@ -3,8 +3,14 @@ let turnosEnColasDeAtencion = [],
     turnosParaSerLlamados = [],
     llamadosExcedidos = [],
     modalLLamado = null,
+    modalConfiguraciones = null,
     idxTurno = 0,
     turnoEnLlamado = [];
+let ultimoEstadoTablaTurnos = null;
+var tiempoTurnosParaSerLlamados,
+    vtiempoRefrescarTablaAtencion,
+    tiempoRefrescarSliderColas;
+var reproductoresVOZ = [];
 
 function realizarLlamado() {
 
@@ -12,17 +18,17 @@ function realizarLlamado() {
         idxTurno = 0;
         reproductoresVOZ = [];
         modalLLamado.hide();
-        return setTimeout(realizarLlamado, 1000);
+        return setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
     }
     if (idxTurno > turnosEnColasDeAtencion.length) {
         idxTurno = 0;
-        setTimeout(realizarLlamado, 1000);
+        setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
     }
 
     turnoEnLlamado = turnosParaSerLlamados[idxTurno];
     if (!turnoEnLlamado) {
         idxTurno = 0;
-        return setTimeout(realizarLlamado, 1000);
+        return setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
     }
 
     renderLlamadosActivos(turnosParaSerLlamados);
@@ -40,9 +46,11 @@ function realizarLlamado() {
 // Renderiza slider de colas
 let splideColas = null;
 let splideRenderizado = false;
-function renderSliderColasDeAtencion() {
-    const slider = document.getElementById('sliderColas');
+const slider = document.getElementById('sliderColas');
 
+async function renderSliderColasDeAtencion() {
+    const respuesta = await conectarseEndPoint('turnosEnColasDeAtencion');
+    turnosEnColasDeAtencion = respuesta.turnosEnColasDeAtencion || [];
     if (!splideRenderizado) {
         slider.innerHTML = '';
         turnosEnColasDeAtencion.forEach((cola) => {
@@ -50,8 +58,8 @@ function renderSliderColasDeAtencion() {
             li.className = 'splide__slide d-flex';
             li.innerHTML = `
         <div class="card card-slider shadow p-3 mb-2 text-center mx-auto w-100">
-          <div class="slider-title">${cola.nombre}</div>
-          <div class="slider-qty">${cola.cantidad}</div>
+          <div class="cola_${cola.id} slider-title">${cola.nombre}</div>
+          <div class="cola_${cola.id} slider-qty">${cola.cantidad}</div>
           <small>pendientes</small>
         </div>
       `;
@@ -70,47 +78,32 @@ function renderSliderColasDeAtencion() {
 
         splideRenderizado = true;
 
-    } else {
-        const slidesOriginales = slider.querySelectorAll(
-            '.splide__slide:not(.splide__slide--clone)'
-        );
-
-        slidesOriginales.forEach((slide, i) => {
-            const datos = turnosEnColasDeAtencion[i];
-            if (!datos) return;
-
-            const titulo = slide.querySelector('.slider-title');
-            const cantidad = slide.querySelector('.slider-qty');
-
-            // Actualizar solo el contenido de texto
-            if (titulo && cantidad) {
-                titulo.textContent = datos.nombre;
-                cantidad.textContent = datos.cantidad;
-            }
-        });
     }
 }
 
 // Renderiza tabla de turnos en atención
-function renderTablaTurnosEnAtencion() {
+async function renderTablaTurnosEnAtencion() {
+    const turnosParaTablaDeAtencion = await conectarseEndPoint('turnosEnAtencion');
+    const nuevosTurnos = turnosParaTablaDeAtencion.turnosEnAtencion || [];
+
+    const jsonNuevo = JSON.stringify(nuevosTurnos);
+    if (jsonNuevo !== ultimoEstadoTablaTurnos) {
+        turnosEnAtencion = nuevosTurnos; 
+        ultimoEstadoTablaTurnos = jsonNuevo;
+    }
     const tbody = document.getElementById('tablaAtencion');
     tbody.innerHTML = '';
 
-    // Obtener número de filas visibles desde CSS
     const estilos = getComputedStyle(document.documentElement);
     const maxFilas = parseInt(estilos.getPropertyValue('--filas-visibles')) || 5;
 
-    // Si el array excede lo visible → rotar el array
     if (turnosEnAtencion.length > maxFilas) {
-        // MOVER EL PRIMERO AL FINAL (rotación simple)
         const primero = turnosEnAtencion.shift();
         turnosEnAtencion.push(primero);
     }
 
-    // Tomar solo las filas visibles
     const visibles = turnosEnAtencion.slice(0, maxFilas);
 
-    // Render normal
     visibles.forEach(turno => {
         tbody.innerHTML += `
         <tr>
@@ -121,6 +114,7 @@ function renderTablaTurnosEnAtencion() {
         `;
     });
 }
+
 
 // Renderiza llamados activos en el modal
 function renderLlamadosActivos(llamadosActivosPorRenderizar) {
@@ -148,25 +142,12 @@ function renderLlamadosActivos(llamadosActivosPorRenderizar) {
     });
 }
 
-function renderInfoParaConfiguracionesEnModal(){
+function renderInfoParaConfiguracionesEnModal() {
     let formConfig = document.getElementById('formConfigPantalla');
 
 
 }
 
-window.conectarseEndPoint = async function (operacion, params = {}) {
-    const api = 'data.php?';
-    const searchParams = new URLSearchParams({
-        operacion: operacion || '',
-        ...params
-    });
-    const response = await fetch(api + searchParams.toString());
-    if (!response.ok) {
-        throw new Error('Error en la petición: ' + response.status);
-    }
-    const data = await response.json();
-    return data;
-}
 //actualiza la cola de turnos que generan el llamado de modal
 window.actualizarColaTurnosParaSerLlamandos = async function () {
     const turnosParaLlamar = await conectarseEndPoint('turnosParaSerLlamados');
@@ -176,20 +157,19 @@ window.actualizarColaTurnosParaSerLlamandos = async function () {
 }
 // Actualiza el slider de colas de turnos
 window.actualizarTurnosEnColaDeAtencion = async function () {
-    const colasDeAtencion = await conectarseEndPoint('turnosEnColasDeAtencion');
-    if (colasDeAtencion === turnosEnColasDeAtencion) return;
-    turnosEnColasDeAtencion = colasDeAtencion.turnosEnColasDeAtencion || [];
-    renderSliderColasDeAtencion();
-}
-// Actualiza la tabla de turnos que estan siendo atendidos
-window.actualizarColaTurnosEnAtencion = async function () {
-    const turnosParaTablaDeAtencion = await conectarseEndPoint('turnosEnAtencion');
-    if (turnosParaTablaDeAtencion === turnosEnAtencion) return;
-    turnosEnAtencion = turnosParaTablaDeAtencion.turnosEnAtencion || [];
-    renderTablaTurnosEnAtencion();
-}
+    const respuesta = await conectarseEndPoint('turnosEnColasDeAtencion');
+    turnosEnColasDeAtencion = respuesta.turnosEnColasDeAtencion || [];
+    turnosEnColasDeAtencion.forEach((turno) => {
+        const cantidades = slider.querySelectorAll(`.cola_${turno.id}.slider-qty`);
 
-window.actualizarDatosParaVariablesEnLocalStorage = async function(){
+        cantidades.forEach((nodo) => {
+            nodo.textContent = turno.cantidad;
+        });
+    });
+};
+
+
+window.actualizarDatosParaVariablesEnLocalStorage = async function () {
     const infoParaConfiguraciones = await conectarseEndPoint('infoParaConfiguracion');
     const sedes = infoParaConfiguraciones.sedes || [];
     const zonas = infoParaConfiguraciones.zonas || [];
@@ -203,19 +183,7 @@ window.actualizarDatosParaVariablesEnLocalStorage = async function(){
 //     document.getElementById('consola').innerHTML += ((fecha.toLocaleTimeString() + '; ' + TXT) + " <br /> ");
 //     console.log(TXT);
 // }
-var reproduciendo = false;
-window.idAleatorio = function () {
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for (var i = 0; i < 5; i++)
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    return text;
-}
-window.hablar = function (textoParaDecir, idPersona = idAleatorio()) {
-    if (textoParaDecir != "") {
-        solicitarTextoAVoz(textoParaDecir, idPersona);
-    }
-}
+
 // Se recomienda envolver el llamado en una función async para usar await
 async function solicitarTextoAVoz(textoParaDecir, idPersona) {
     try {
@@ -238,8 +206,6 @@ async function solicitarTextoAVoz(textoParaDecir, idPersona) {
         const respuesta = await response.text();
 
         reproducirRespuestaAPI(respuesta);
-        console.log(reproductoresVOZ);
-
         // Retornar si se necesita la respuesta para otros usos
         return respuesta;
 
@@ -271,24 +237,6 @@ function decirDatosTurnoLlamando(turnoEnLlamado) {
     }
     setTimeout(decirDatosTurnoLlamando, (audio.duration * 1000) + 500);
     ////console.log("hablar "+ diciendo );
-}
-var reproductoresVOZ = [];
-window.reproducirRespuestaAPI = function (respuesta) {
-    if (respuesta) {
-        var datos = JSON.parse(respuesta);
-        if (reproductoresVOZ.length) {
-            var reproductor = reproductoresVOZ[datos.id];
-        } else {
-            reproductoresVOZ[datos.id] = document.createElement('audio');
-            reproductoresVOZ[datos.id].setAttribute('id', "sonidoEspanola" + datos.id);
-            reproductoresVOZ[datos.id].setAttribute('src', datos.audio);
-            reproductoresVOZ[datos.id].autoplay = true;
-            reproductoresVOZ[datos.id].muted = true;
-            reproductoresVOZ[datos.id].addEventListener("loadeddata", (event) => {
-                console.log('va hablar primera vez ' + datos.id);
-            });
-        }
-    }
 }
 
 function reproducirVOZ(idGenerado) {
@@ -341,98 +289,116 @@ function reproducirVOZ(idGenerado) {
         //        }
     }
 }
-function abrirPantallaCompletaVideoYoutube() {
-    let video;
-    let temporizador = 50000; // 50 segundos
-    let tiempoSinTurnos = 0;  // acumulador en ms
 
+var video;
+let videoExpandido = false;
+var tiempoParaExpandirVideo = 3600000; // 1 hora
+var tiempoSinTurnos = 0;
+function abrirPantallaCompletaVideoYoutube() {
     video = new YT.Player('videoPlayList', {
         events: {
             'onReady': onPlayerReady
         }
     });
 
-    function onPlayerReady() {
-        video.mute();
-        video.playVideo();
+}
+function onPlayerReady() {
+    video.mute();
+    video.playVideo();
 
-        // Revisar periódicamente si hay o no turnos
-        setInterval(() => {
-            if (turnosParaSerLlamados.length === 0) {
-                // No hay turnos: acumulo tiempo "vacío"
-                tiempoSinTurnos += 1000; // sumo 1 segundo
+    // Revisar periódicamente si hay o no turnos
+    setInterval(() => {
+        if (turnosParaSerLlamados.length === 0) {
+            // No hay turnos: acumulo tiempo "vacío"
+            tiempoSinTurnos += 1000; // sumo 1 segundo
 
-                if (tiempoSinTurnos >= temporizador && !document.fullscreenElement) {
-                    fullscreenVideo();
-                }
-            } else {
-                // Hay turnos: reseteo contador y salgo de fullscreen
-                tiempoSinTurnos = 0;
-                exitFullscreenVideo();
+            if (tiempoSinTurnos >= tiempoParaExpandirVideo && !document.fullscreenElement) {
+                expandirVideo();
             }
-            // Si el usuario sale con ESC, reiniciamos el contador
-            document.addEventListener('fullscreenchange', () => {
-                if (!document.fullscreenElement) {
-                    tiempoSinTurnos = 0;
-                }
-            });
-        }, 1000);
-
-        function fullscreenVideo() {
-            const iframe = document.getElementById('videoPlayList');
-            if (iframe && iframe.requestFullscreen) {
-                iframe.requestFullscreen();
-            }
-        }
-
-        function exitFullscreenVideo() {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            }
+        } else {
+            // Hay turnos: reseteo contador y salgo de fullscreen
             tiempoSinTurnos = 0;
+            contraerVideo();
         }
-    }
+        // Si el usuario sale con ESC, reiniciamos el contador
+        document.addEventListener('keydown', (event) => {
+            if (event.key === "Escape") {
+                tiempoSinTurnos = 0;
+                contraerVideo();
+            }
+        });
+    }, 1000);
+
+}
+function expandirVideo() {
+    if (videoExpandido) return;
+    document.body.classList.add('video-expand-active');
+    videoExpandido = true;
 }
 
-function guardarVariablesCofiguracion(e) {
-    e.preventDefault();
-    var tiempoLlamadosSlider = document.getElementById('tiempoLlamadosSlider').value;
+function contraerVideo() {
+    if (!videoExpandido) return;
+    document.body.classList.remove('video-expand-active');
+    videoExpandido = false;
+    tiempoSinTurnos = 0;
+}
+
+function guardarVariablesCofiguracion() {
+
+    var sede = document.getElementById('sedesCCSM').value;
+    var zona = document.getElementById('zonasAtencion').value;
+    var tiempoLlamadosSlider = document.getElementById('tiempoLlamadosSlider').value || null;
     var tiempoLlamadosTurnosAtencion = document.getElementById('tiempoLlamadosTurnosAtencion').value;
     var tiempoTurnosParaLlamar = document.getElementById('tiempoTurnosParaLlamar').value;
+    var tiempoParaExpandirVideo = document.getElementById('tiempoParaExpandirVideo').value;
 
-    localStorage.setItem('tiempoLlamadosSlider', tiempoLlamadosSlider);
-    localStorage.setItem('tiempoLlamadosTurnosAtencion', tiempoLlamadosTurnosAtencion);
-    localStorage.setItem('tiempoTurnosParaLlamar', tiempoTurnosParaLlamar);
+    localStorage.setItem('sedeCCSM', sede);
+    localStorage.setItem('zonaAtencion', zona);
+    localStorage.setItem('tiempoLlamadosSlider', tiempoLlamadosSlider * 1000);
+    localStorage.setItem('tiempoLlamadosTurnosAtencion', tiempoLlamadosTurnosAtencion * 1000);
+    localStorage.setItem('tiempoTurnosParaLlamar', tiempoTurnosParaLlamar * 1000);
+    localStorage.setItem('tiempoParaExpandirVideo', tiempoParaExpandirVideo * 1000);
 
-    var modal = bootstrap.Modal.getInstance(document.getElementById('configModal'));
-    modal.hide();
+    window.location.reload();
 }
 
 // Inicializa todo
 document.addEventListener('DOMContentLoaded', () => {
-    modalEle = document.getElementById('llamadoModal');
-    modalLLamado = new bootstrap.Modal(modalEle);
+    modalConfiguraciones = new bootstrap.Modal(document.getElementById('configModal'));
 
-    document.getElementById('formConfigPantalla').addEventListener("submit", guardarVariablesCofiguracion);
+    if (localStorage.getItem('tiempoTurnosParaLlamar') && localStorage.getItem('tiempoLlamadosTurnosAtencion') && localStorage.getItem('tiempoLlamadosSlider')) {
+        tiempoTurnosParaSerLlamados = localStorage.getItem('tiempoTurnosParaLlamar');
+        tiempoRefrescarTablaAtencion = localStorage.getItem('tiempoLlamadosTurnosAtencion');
+        tiempoRefrescarSliderColas = localStorage.getItem('tiempoLlamadosSlider');
+
+        tiempoParaExpandirVideo = localStorage.getItem('tiempoParaExpandirVideo') || 3600000; // 1 hora
+
+        modalEle = document.getElementById('llamadoModal');
+        modalLLamado = new bootstrap.Modal(modalEle);
+
+        document.getElementById('formConfigPantalla').addEventListener("submit", guardarVariablesCofiguracion);
 
 
-    //Llamado periodico que verifica los turnos para llamar
-    setInterval(() => {
-        actualizarColaTurnosParaSerLlamandos();
-    }, 1000);
-    realizarLlamado();
-    // Llanado periordico que verifica las colas de atencion y las actualiza el slider si es necesario
-    setInterval(() => {
-        actualizarTurnosEnColaDeAtencion();
-    }, 3000);
-    // Llamado periodico que actualiza la tabla de turnos que estan siendo atendidos
-    setInterval(() => {
-        actualizarColaTurnosEnAtencion();
-    }, 2000);
-    setTimeout(() => {
-        decirDatosTurnoLlamando(turnoEnLlamado);
-    }, 5000);
-
-    setTimeout(abrirPantallaCompletaVideoYoutube, 7000);
-
+        //Llamado periodico que verifica los turnos para llamar
+        setInterval(() => {
+            actualizarColaTurnosParaSerLlamandos();
+        }, tiempoTurnosParaSerLlamados || 1000);
+        realizarLlamado();
+        // Llanado periordico que verifica las colas de atencion y las actualiza el slider si es necesario
+        setInterval(() => {
+            actualizarTurnosEnColaDeAtencion();
+        }, tiempoRefrescarSliderColas || 3000);
+        // Llamado periodico que actualiza la tabla de turnos que estan siendo atendidos
+        setInterval(() => {
+            renderTablaTurnosEnAtencion();
+        }, tiempoRefrescarTablaAtencion || 2000);
+        setTimeout(() => {
+            decirDatosTurnoLlamando(turnoEnLlamado);
+        }, 5000);
+        
+        renderSliderColasDeAtencion();
+        setTimeout(abrirPantallaCompletaVideoYoutube, 7000);
+    } else {
+        modalConfiguraciones.show();
+    }
 });

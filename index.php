@@ -103,23 +103,41 @@
           <!-- Aquí tu JS va a inyectar todo -->
           <div class="modal-body-config" id="configModalBody">
             <div class="modal-body">
+          <div class="mb-3">
+            <label for="sedesCCSM" class="form-label">Sedes</label>
+            <select class="form-select" id="sedesCCSM">
+              <option value="">Selecciona una sede...</option>
+              <option value="">Principal</option>
+            </select>
+          </div>
 
           <div class="mb-3">
-            <label for="tiempoLlamadosSlider" class="form-label">Tiempo llamados Slider (ms)</label>
-            <input type="number" class="form-control" id="tiempoLlamadosSlider" min="0">
+            <label for="zonasAtencion" class="form-label">Zonas de Atención</label>
+            <select class="form-select" id="zonasAtencion">
+              <option value="">Selecciona una zona...</option>
+              <option value="">Piso 1</option>
+            </select>
           </div>
           <div class="mb-3">
-            <label for="tiempoLlamadosTurnosAtencion" class="form-label">Tiempo llamados Turnos Atención (ms)</label>
-            <input type="number" class="form-control" id="tiempoLlamadosTurnosAtencion" min="0">
+            <label for="tiempoLlamadosSlider" class="form-label">Tiempo de refrescar Slider de colas (Seg)</label>
+            <input type="number" class="form-control" id="tiempoLlamadosSlider" min="1">
           </div>
           <div class="mb-3">
-            <label for="tiempoTurnosParaLlamar" class="form-label">Tiempo turnos para llamar (ms)</label>
-            <input type="number" class="form-control" id="tiempoTurnosParaLlamar" min="0">
+            <label for="tiempoLlamadosTurnosAtencion" class="form-label">Tiempo de refrescar tabla de atención (Seg)</label>
+            <input type="number" class="form-control" id="tiempoLlamadosTurnosAtencion" min="1">
+          </div>
+          <div class="mb-3">
+            <label for="tiempoTurnosParaLlamar" class="form-label">Tiempo de consulta de turnos para llamar (Seg)</label>
+            <input type="number" default="1" class="form-control" id="tiempoTurnosParaLlamar" min="1">
+          </div>
+          <div class="mb-3">
+            <label for="tiempoParaExpandirVideo" class="form-label">Tiempo para expandir video (Seg)</label>
+            <input type="number" class="form-control" id="tiempoParaExpandirVideo" min="1">
           </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button  type="button" id="boton-guardar" onclick="guardarVariablesCofiguracion()" class="btn btn-primary">Guardar</button>
           </div>
         </form>
       </div>
@@ -133,6 +151,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="turnos.js"></script>
+  <script src="healper.js"></script>
+
 
 
 

@@ -6,6 +6,11 @@
             "nombre": "Carlos"
         },
         {
+            "modulo": "Modulo 1",
+            "codigo": "C013",
+            "nombre": "Carlos"
+        },
+        {
             "modulo": "Modulo 2",
             "codigo": "A045",
             "nombre": "Ana"

@@ -86,3 +86,18 @@ body {
     font-size: 3rem;
   }
 }
+
+/* Modo "pantalla completa" simulado */
+body.video-expand-active {
+  overflow: hidden; /* quita scroll al expandir el video */
+}
+
+body.video-expand-active #videoPlayList {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;          /* por encima de todo */
+  border: none;
+}
