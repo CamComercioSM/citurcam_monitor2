@@ -1,15 +1,21 @@
 window.conectarseEndPoint = async function (operacion, params = {}) {
-    const api = 'data.php?';
-    const searchParams = new URLSearchParams({
-        operacion: operacion || '',
-        ...params
+    const api = 'https://api.citurcam.com/' + operacion;
+    if (typeof params !== 'object') {
+        params = { datos: params.toString() };
+    }
+    const response = await fetch(api, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: JSON.stringify(params)
     });
-    const response = await fetch(api + searchParams.toString());
+
     if (!response.ok) {
         throw new Error('Error en la petición: ' + response.status);
     }
-    const data = await response.json();
-    return data;
+
+    return await response.json();
 }
 
 var reproduciendo = false;
@@ -24,6 +30,11 @@ window.hablar = function (textoParaDecir, idPersona = idAleatorio()) {
     if (textoParaDecir != "") {
         solicitarTextoAVoz(textoParaDecir, idPersona);
     }
+}
+
+window.reproducirTimbreTipoDeTurno = function () {
+    let tiembreGeneral = document.getElementById('timbreTurnoGeneral');
+    let tiembre = document.getElementById('timbreTurnoGeneral');
 }
 
 window.reproducirRespuestaAPI = function (respuesta) {

@@ -8,9 +8,16 @@ let turnosEnColasDeAtencion = [],
     turnoEnLlamado = [];
 let ultimoEstadoTablaTurnos = null;
 var tiempoTurnosParaSerLlamados,
-    vtiempoRefrescarTablaAtencion,
-    tiempoRefrescarSliderColas;
+    tiempoRefrescarTablaAtencion,
+    tiempoRefrescarSliderColas,
+    identificadorSede,
+    identificadorZonaAtencion;
 var reproductoresVOZ = [];
+
+// Renderiza slider de colas
+let splideColas = null;
+let splideRenderizado = false;
+const slider = document.getElementById('sliderColas');
 
 function realizarLlamado() {
 
@@ -30,10 +37,8 @@ function realizarLlamado() {
         idxTurno = 0;
         return setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
     }
-
-    renderLlamadosActivos(turnosParaSerLlamados);
     decirDatosTurnoLlamando(turnoEnLlamado);
-
+    renderLlamadosActivos(turnosParaSerLlamados);
     modalLLamado.show();
 
     setTimeout(() => {
@@ -43,14 +48,9 @@ function realizarLlamado() {
     }, 5000);
 }
 
-// Renderiza slider de colas
-let splideColas = null;
-let splideRenderizado = false;
-const slider = document.getElementById('sliderColas');
-
 async function renderSliderColasDeAtencion() {
-    const respuesta = await conectarseEndPoint('turnosEnColasDeAtencion');
-    turnosEnColasDeAtencion = respuesta.turnosEnColasDeAtencion || [];
+    const respuesta = await conectarseEndPoint('mostrarTotalTurnosPendientesPorZonasPorTiposServicios', identificadorZonaAtencion);
+    turnosEnColasDeAtencion = respuesta.DATOS || [];
     if (!splideRenderizado) {
         slider.innerHTML = '';
         turnosEnColasDeAtencion.forEach((cola) => {
@@ -58,8 +58,8 @@ async function renderSliderColasDeAtencion() {
             li.className = 'splide__slide d-flex';
             li.innerHTML = `
         <div class="card card-slider shadow p-3 mb-2 text-center mx-auto w-100">
-          <div class="cola_${cola.id} slider-title">${cola.nombre}</div>
-          <div class="cola_${cola.id} slider-qty">${cola.cantidad}</div>
+          <div class="cola_${cola.turnoTipoServicioID} slider-title">${cola.turnoTipoServicioTITULO}</div>
+          <div class="cola_${cola.turnoTipoServicioID} slider-qty">${cola.turnosPENDIENTES}</div>
           <small>pendientes</small>
         </div>
       `;
@@ -100,9 +100,9 @@ function renderTablaTurnosEnAtencion() {
     visibles.forEach(turno => {
         tbody.innerHTML += `
         <tr>
-            <td>${turno.modulo}</td>
-            <td>${turno.codigo}</td>
-            <td>${turno.nombre}</td>
+            <td>${turno.moduloAtencionTITULO}</td>
+            <td>${turno.turnoCODIGOCORTO}</td>
+            <td>${turno.personaNOMBRES}</td>
         </tr>
         `;
     });
@@ -130,43 +130,37 @@ function renderLlamadosActivos(llamadosActivosPorRenderizar) {
 
         cont.innerHTML += `
       <div class="p-4 rounded-4 ${color} shadow text-white" style="min-width: 220px;">
-        <h2>${llamado.modulo}</h2>
-        <h3 class="display-4">${llamado.codigo}</h3>
-        <p class="fs-2 mb-0">${llamado.nombre}</p>
+        <h2>${llamado.moduloAtencionTITULO}</h2>
+        <h3 class="display-4">${llamado.turnoCODIGOCORTO}</h3>
+        <p class="fs-2 mb-0">${llamado.personaNOMBRES}</p>
       </div>
     `;
     });
 }
 
-function renderInfoParaConfiguracionesEnModal() {
-    let formConfig = document.getElementById('formConfigPantalla');
-
-
-}
-
 //actualiza la cola de turnos que generan el llamado de modal
 window.actualizarColaTurnosParaSerLlamandos = async function () {
-    const turnosParaLlamar = await conectarseEndPoint('turnosParaSerLlamados');
+    const turnosParaLlamar = await conectarseEndPoint('mostrarTurnosLlamandoZonasAtencion', identificadorZonaAtencion);
     if (turnosParaLlamar === turnosParaSerLlamados) return;
-    turnosParaSerLlamados = turnosParaLlamar.turnosParaSerLlamados || [];
+    turnosParaSerLlamados = turnosParaLlamar.DATOS || [];
     llamadosExcedidos = turnosParaSerLlamados;
 }
 // Actualiza el slider de colas de turnos
 window.actualizarTurnosEnColaDeAtencion = async function () {
-    const respuesta = await conectarseEndPoint('turnosEnColasDeAtencion');
-    turnosEnColasDeAtencion = respuesta.turnosEnColasDeAtencion || [];
+    const respuesta = await conectarseEndPoint('mostrarTotalTurnosPendientesPorZonasPorTiposServicios', identificadorZonaAtencion);
+    turnosEnColasDeAtencion = respuesta.DATOS || [];
     turnosEnColasDeAtencion.forEach((turno) => {
-        const cantidades = slider.querySelectorAll(`.cola_${turno.id}.slider-qty`);
+        const cantidades = slider.querySelectorAll(`.cola_${turno.turnoTipoServicioID}.slider-qty`);
 
         cantidades.forEach((nodo) => {
-            nodo.textContent = turno.cantidad;
+            nodo.textContent = turno.turnosPENDIENTES;
         });
     });
 };
 
 async function actualizarTablaTurnosEnAtencion() {
-    const turnosParaTablaDeAtencion = await conectarseEndPoint('turnosEnAtencion');
-    const nuevosTurnos = turnosParaTablaDeAtencion.turnosEnAtencion || [];
+    const turnosParaTablaDeAtencion = await conectarseEndPoint('atendiendoPorModulosPorZonasAtencion', identificadorZonaAtencion);
+    const nuevosTurnos = turnosParaTablaDeAtencion.DATOS || [];
 
     const jsonNuevo = JSON.stringify(nuevosTurnos);
     if (jsonNuevo !== ultimoEstadoTablaTurnos) {
@@ -174,16 +168,6 @@ async function actualizarTablaTurnosEnAtencion() {
         ultimoEstadoTablaTurnos = jsonNuevo;
     }
 }
-
-window.actualizarDatosParaVariablesEnLocalStorage = async function () {
-    const infoParaConfiguraciones = await conectarseEndPoint('infoParaConfiguracion');
-    const sedes = infoParaConfiguraciones.sedes || [];
-    const zonas = infoParaConfiguraciones.zonas || [];
-
-    console.log('sedes', sedes);
-    console.log('actualizando...');
-}
-
 // function registroAccionesConsola(TXT = "") {
 //     let fecha = new Date();
 //     document.getElementById('consola').innerHTML += ((fecha.toLocaleTimeString() + '; ' + TXT) + " <br /> ");
@@ -226,22 +210,22 @@ function decirDatosTurnoLlamando(turnoEnLlamado) {
     if ((turnosParaSerLlamados.length) === 0) return;
     if (turnosParaSerLlamados.length > 0) {
         if (turnoEnLlamado) {
-            $textoHablar = "Llamando al turno " + turnoEnLlamado.codigo;
-            hablar($textoHablar, turnoEnLlamado.codigo);
-            if (reproductoresVOZ[turnoEnLlamado.codigo]) {
-                //reproducirVOZ(turnoEnLlamado.codigo);
-                audio = reproductoresVOZ[turnoEnLlamado.codigo];
-                audio.volume = 1;
-                audio.muted = false;
-                audio.load();
-                audio.play().catch(err => {
-                    console.warn('No se pudo reproducir audio:', err);
-                });
-            }
+            $textoHablar = "Llamando al turno " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
+            hablar($textoHablar, turnoEnLlamado.turnoCODIGOATENCION);
 
+            if (reproductoresVOZ[turnoEnLlamado.turnoCODIGOATENCION]) {
+                reproducirVOZ(turnoEnLlamado.turnoCODIGOATENCION);
+                // audio = reproductoresVOZ[turnoEnLlamado.turnoCODIGOATENCION];
+                // audio.volume = 1;
+                // audio.muted = false;
+                // audio.load();
+                // audio.play().catch(err => {
+                //     console.warn('No se pudo reproducir audio:', err);
+                // });
+            }
         }
     }
-    setTimeout(decirDatosTurnoLlamando, (audio.duration * 1000) + 500);
+    setTimeout(decirDatosTurnoLlamando, (audio.duration * 1000) + 2000);
     ////console.log("hablar "+ diciendo );
 }
 
@@ -250,6 +234,7 @@ function reproducirVOZ(idGenerado) {
     //    console.log("objeto reproductor generado");
     if (media) {
         media.volume = 1;
+        media.load();
         media.muted = false;
         const playPromise = media.play();
         //        console.log(playPromise);
@@ -267,7 +252,7 @@ function reproducirVOZ(idGenerado) {
                         //registroAccionesConsola("intentando cargar MP3 de la española nuevamente " + idGenerado);
                         setTimeout(function () {
                             reproducirVOZ(idGenerado);
-                        }, 1234);
+                        }, (media.duration * 1000) + 2000);
                     }
                 });
             }
@@ -368,23 +353,61 @@ function guardarVariablesCofiguracion() {
     window.location.reload();
 }
 
+async function cargarInformacionSedesZonasAtencion() {
+    const respuesta = await conectarseEndPoint('datosSedesConZonasAtencion');
+    const sedesZonas = respuesta.DATOS || [];
+
+    const selectSedes = document.getElementById('sedesCCSM');
+    const selectZonas = document.getElementById('zonasAtencion');
+
+    selectSedes.innerHTML = '<option value="">Selecciona una sede...</option>';
+    selectZonas.innerHTML = '<option value="">Selecciona una zona...</option>';
+
+    sedesZonas.forEach(sede => {
+        if (!sede.ZonasAtencion || sede.ZonasAtencion.length === 0) return;
+
+        const opt = document.createElement('option');
+        opt.value = sede.sedeID;
+        opt.textContent = sede.sedeTITULO;
+        selectSedes.appendChild(opt);
+    });
+
+    selectSedes.addEventListener('change', () => {
+        const sedeIdSeleccionada = parseInt(selectSedes.value, 10);
+
+        // limpiar zonas
+        selectZonas.innerHTML = '<option value="">Selecciona una zona...</option>';
+
+        const sede = sedesZonas.find(s => s.sedeID === sedeIdSeleccionada);
+        if (!sede || !sede.ZonasAtencion) return;
+
+        sede.ZonasAtencion.forEach(zona => {
+            const optZona = document.createElement('option');
+            optZona.value = zona.puestoTrabajoID;
+            optZona.textContent = zona.puestoTrabajoTITULO;
+            selectZonas.appendChild(optZona);
+        });
+    });
+}
+
+
 // Inicializa todo
 document.addEventListener('DOMContentLoaded', () => {
     modalConfiguraciones = new bootstrap.Modal(document.getElementById('configModal'));
-
-    if (localStorage.getItem('tiempoTurnosParaLlamar') && localStorage.getItem('tiempoLlamadosTurnosAtencion') && localStorage.getItem('tiempoLlamadosSlider')) {
+    cargarInformacionSedesZonasAtencion();
+    if (localStorage.getItem('tiempoTurnosParaLlamar') && localStorage.getItem('tiempoLlamadosTurnosAtencion') && localStorage.getItem('tiempoLlamadosSlider') && localStorage.getItem('sedeCCSM') && localStorage.getItem('zonaAtencion')) {
         tiempoTurnosParaSerLlamados = localStorage.getItem('tiempoTurnosParaLlamar');
         tiempoRefrescarTablaAtencion = localStorage.getItem('tiempoLlamadosTurnosAtencion');
         tiempoRefrescarSliderColas = localStorage.getItem('tiempoLlamadosSlider');
-
         tiempoParaExpandirVideo = localStorage.getItem('tiempoParaExpandirVideo') || 3600000; // 1 hora
-
+        identificadorSede = localStorage.getItem('sedeCCSM');
+        identificadorZonaAtencion = localStorage.getItem('zonaAtencion');
+        document.getElementById('infoSede').textContent = identificadorSede;
+        document.getElementById('infoZona').textContent = identificadorZonaAtencion;
         modalEle = document.getElementById('llamadoModal');
         modalLLamado = new bootstrap.Modal(modalEle);
 
         document.getElementById('formConfigPantalla').addEventListener("submit", guardarVariablesCofiguracion);
-
-
         //Llamado periodico que verifica los turnos para llamar
         setInterval(() => {
             actualizarColaTurnosParaSerLlamandos();
@@ -403,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
         setTimeout(() => {
             decirDatosTurnoLlamando(turnoEnLlamado);
-        }, 3000);
+        }, 1500);
 
         renderSliderColasDeAtencion();
         setTimeout(abrirPantallaCompletaVideoYoutube, 7000);
