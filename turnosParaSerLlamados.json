@@ -1,3 +1,8 @@
 {
-    "turnosParaSerLlamados": []
+    "turnosParaSerLlamados": [{
+      "modulo": "Modulo 5",
+      "codigo": "A085",
+      "nombre": "Juan",
+      "tipo" : "Prioritario"
+    }]
 }

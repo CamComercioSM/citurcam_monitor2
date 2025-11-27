@@ -82,21 +82,14 @@ async function renderSliderColasDeAtencion() {
 }
 
 // Renderiza tabla de turnos en atención
-async function renderTablaTurnosEnAtencion() {
-    const turnosParaTablaDeAtencion = await conectarseEndPoint('turnosEnAtencion');
-    const nuevosTurnos = turnosParaTablaDeAtencion.turnosEnAtencion || [];
-
-    const jsonNuevo = JSON.stringify(nuevosTurnos);
-    if (jsonNuevo !== ultimoEstadoTablaTurnos) {
-        turnosEnAtencion = nuevosTurnos; 
-        ultimoEstadoTablaTurnos = jsonNuevo;
-    }
+function renderTablaTurnosEnAtencion() {
     const tbody = document.getElementById('tablaAtencion');
     tbody.innerHTML = '';
 
     const estilos = getComputedStyle(document.documentElement);
     const maxFilas = parseInt(estilos.getPropertyValue('--filas-visibles')) || 5;
 
+    // rotación del arreglo que ya tenemos en memoria
     if (turnosEnAtencion.length > maxFilas) {
         const primero = turnosEnAtencion.shift();
         turnosEnAtencion.push(primero);
@@ -114,6 +107,9 @@ async function renderTablaTurnosEnAtencion() {
         `;
     });
 }
+actualizarTablaTurnosEnAtencion().then(() => {
+    renderTablaTurnosEnAtencion();
+});
 
 
 // Renderiza llamados activos en el modal
@@ -168,6 +164,16 @@ window.actualizarTurnosEnColaDeAtencion = async function () {
     });
 };
 
+async function actualizarTablaTurnosEnAtencion() {
+    const turnosParaTablaDeAtencion = await conectarseEndPoint('turnosEnAtencion');
+    const nuevosTurnos = turnosParaTablaDeAtencion.turnosEnAtencion || [];
+
+    const jsonNuevo = JSON.stringify(nuevosTurnos);
+    if (jsonNuevo !== ultimoEstadoTablaTurnos) {
+        turnosEnAtencion = nuevosTurnos;
+        ultimoEstadoTablaTurnos = jsonNuevo;
+    }
+}
 
 window.actualizarDatosParaVariablesEnLocalStorage = async function () {
     const infoParaConfiguraciones = await conectarseEndPoint('infoParaConfiguracion');
@@ -390,12 +396,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }, tiempoRefrescarSliderColas || 3000);
         // Llamado periodico que actualiza la tabla de turnos que estan siendo atendidos
         setInterval(() => {
-            renderTablaTurnosEnAtencion();
+            actualizarTablaTurnosEnAtencion();
         }, tiempoRefrescarTablaAtencion || 2000);
+        setInterval(() => {
+            renderTablaTurnosEnAtencion();
+        }, 5000);
         setTimeout(() => {
             decirDatosTurnoLlamando(turnoEnLlamado);
-        }, 5000);
-        
+        }, 3000);
+
         renderSliderColasDeAtencion();
         setTimeout(abrirPantallaCompletaVideoYoutube, 7000);
     } else {
