@@ -150,8 +150,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="turnos.js"></script>
-  <script src="healper.js"></script>
+  <script src="js/turnos.js"></script>
+  <script src="js/healper.js"></script>
 
 
 
