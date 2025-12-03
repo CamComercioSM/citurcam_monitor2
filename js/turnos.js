@@ -2,11 +2,12 @@ let turnosEnColasDeAtencion = [],
     turnosEnAtencion = [],
     turnosParaSerLlamados = [],
     llamadosExcedidos = [],
-    modalLLamado = null,
+    modalLlamado = null,
     modalConfiguraciones = null,
     idxTurno = 0,
     turnoEnLlamado = [];
 let ultimoEstadoTablaTurnos = null;
+let ultimoEstadoColaParaLlamar = null;
 var tiempoTurnosParaSerLlamados,
     tiempoRefrescarTablaAtencion,
     tiempoRefrescarSliderColas,
@@ -20,11 +21,12 @@ let splideRenderizado = false;
 const slider = document.getElementById('sliderColas');
 
 function realizarLlamado() {
+    console.log(turnosParaSerLlamados);
 
     if (turnosParaSerLlamados.length === 0) {
         idxTurno = 0;
         reproductoresVOZ = [];
-        modalLLamado.hide();
+        modalLlamado.hide();
         return setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
     }
     if (idxTurno > turnosEnColasDeAtencion.length) {
@@ -39,7 +41,7 @@ function realizarLlamado() {
     }
     decirDatosTurnoLlamando(turnoEnLlamado);
     renderLlamadosActivos(turnosParaSerLlamados);
-    modalLLamado.show();
+    modalLlamado.show();
 
     setTimeout(() => {
         renderLlamadosActivos([]);
@@ -122,7 +124,8 @@ function renderLlamadosActivos(llamadosActivosPorRenderizar) {
     const colores = {
         Prioritario: 'bg-danger',
         Afiliado: 'bg-success',
-        General: 'bg-primary'
+        General: 'bg-primary',
+        Cita: 'bg-success'
     };
     llamadosActivosPorRenderizar.forEach(llamado => {
         // Elegimos el color; si no existe tipo, usamos general
@@ -140,11 +143,44 @@ function renderLlamadosActivos(llamadosActivosPorRenderizar) {
 
 //actualiza la cola de turnos que generan el llamado de modal
 window.actualizarColaTurnosParaSerLlamandos = async function () {
-    const turnosParaLlamar = await conectarseEndPoint('mostrarTurnosLlamandoZonasAtencion', identificadorZonaAtencion);
-    if (turnosParaLlamar === turnosParaSerLlamados) return;
-    turnosParaSerLlamados = turnosParaLlamar.DATOS || [];
-    llamadosExcedidos = turnosParaSerLlamados;
-}
+    //const resp = await conectarseEndPoint('mostrarTurnosLlamandoZonasAtencion',identificadorZonaAtencion);
+    const res = await fetch('data.php?operacion=turnosParaSerLlamados');
+    const resp = await res.json();
+
+    const datos = resp.DATOS || [];
+    const turnos = datos[0] || [];
+    const citas = datos[1] || [];
+
+    // Si vienen citas → armamos los elementos a partir de ellas
+    if (citas.length > 0) {
+        const armados = citas.map(cita => {
+            const ident = cita.personaIDENTIFICACION || "";
+            const ultimos3 = ident.toString().slice(-3);  
+            return {
+                tipo: "Cita",
+                moduloAtencionTITULO: cita.moduloAtencionTITULO || cita.modulo || "",
+                turnoCODIGOCORTO: ultimos3,
+                personaNOMBRES: cita.personaNOMBRES || cita.nombre || ""
+            };
+        });
+
+        const jsonNuevo = JSON.stringify(armados);
+
+        if (jsonNuevo !== ultimoEstadoColaParaLlamar) {
+            turnosParaSerLlamados = armados;
+            ultimoEstadoColaParaLlamar = jsonNuevo;
+        }
+    }
+
+    if (turnos.length > 0) {
+        const jsonNuevo = JSON.stringify(turnos);
+        if (jsonNuevo !== ultimoEstadoColaParaLlamar) {
+            turnosParaSerLlamados = turnos;
+            ultimoEstadoColaParaLlamar = jsonNuevo;
+        }
+    }
+};
+
 // Actualiza el slider de colas de turnos
 window.actualizarTurnosEnColaDeAtencion = async function () {
     const respuesta = await conectarseEndPoint('mostrarTotalTurnosPendientesPorZonasPorTiposServicios', identificadorZonaAtencion);
@@ -166,7 +202,9 @@ async function actualizarTablaTurnosEnAtencion() {
     if (jsonNuevo !== ultimoEstadoTablaTurnos) {
         turnosEnAtencion = nuevosTurnos;
         ultimoEstadoTablaTurnos = jsonNuevo;
+        console.log('Tabla de turnos en atención actualizada');
     }
+
 }
 // function registroAccionesConsola(TXT = "") {
 //     let fecha = new Date();
@@ -210,7 +248,11 @@ function decirDatosTurnoLlamando(turnoEnLlamado) {
     if ((turnosParaSerLlamados.length) === 0) return;
     if (turnosParaSerLlamados.length > 0) {
         if (turnoEnLlamado) {
-            $textoHablar = "Llamando al turno " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
+            if (turnoEnLlamado.tipo === "Cita") {
+                $textoHablar = "Llamando a la cita de "  + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
+            } else {
+                $textoHablar = "Llamando al turno " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
+            }
             hablar($textoHablar, turnoEnLlamado.turnoCODIGOATENCION);
 
             if (reproductoresVOZ[turnoEnLlamado.turnoCODIGOATENCION]) {
@@ -405,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('infoSede').textContent = identificadorSede;
         document.getElementById('infoZona').textContent = identificadorZonaAtencion;
         modalEle = document.getElementById('llamadoModal');
-        modalLLamado = new bootstrap.Modal(modalEle);
+        modalLlamado = new bootstrap.Modal(modalEle);
 
         document.getElementById('formConfigPantalla').addEventListener("submit", guardarVariablesCofiguracion);
         //Llamado periodico que verifica los turnos para llamar
