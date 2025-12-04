@@ -157,6 +157,7 @@
   </audio>
   <audio controls id="timbreTurnoGeneral" src="./public/mp3/Jetsons-doorbell.mp3"></audio>
   <audio controls id="timbreTurnoAfiliados" src="./public/mp3/iphone_notification.mp3"></audio>
+  <audio controls id="sonidoAmbiente" src="./public/mp3/sonido-ambiente.mp3"></audio>
 
   <script>
     document.addEventListener("DOMContentLoaded", function() {

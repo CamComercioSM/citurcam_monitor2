@@ -27,6 +27,7 @@ function realizarLlamado() {
         idxTurno = 0;
         reproductoresVOZ = [];
         modalLlamado.hide();
+        reproducirSonidoAmbiente();
         return setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
     }
     if (idxTurno > turnosEnColasDeAtencion.length) {
@@ -39,6 +40,7 @@ function realizarLlamado() {
         idxTurno = 0;
         return setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
     }
+    pausarSonidoAmbiente();
     decirDatosTurnoLlamando(turnoEnLlamado);
     renderLlamadosActivos(turnosParaSerLlamados);
     modalLlamado.show();
@@ -142,8 +144,9 @@ function renderLlamadosActivos(llamadosActivosPorRenderizar) {
 }
 
 //actualiza la cola de turnos que generan el llamado de modal
+// actualiza la cola de turnos que generan el llamado de modal
 window.actualizarColaTurnosParaSerLlamandos = async function () {
-    //const resp = await conectarseEndPoint('mostrarTurnosLlamandoZonasAtencion',identificadorZonaAtencion);
+    // const resp = await conectarseEndPoint('mostrarTurnosLlamandoZonasAtencion', identificadorZonaAtencion);
     const res = await fetch('data.php?operacion=turnosParaSerLlamados');
     const resp = await res.json();
 
@@ -151,35 +154,35 @@ window.actualizarColaTurnosParaSerLlamandos = async function () {
     const turnos = datos[0] || [];
     const citas = datos[1] || [];
 
-    // Si vienen citas → armamos los elementos a partir de ellas
-    if (citas.length > 0) {
-        const armados = citas.map(cita => {
-            const ident = cita.personaIDENTIFICACION || "";
-            const ultimos3 = ident.toString().slice(-3);  
-            return {
-                tipo: "Cita",
-                moduloAtencionTITULO: cita.moduloAtencionTITULO || cita.modulo || "",
-                turnoCODIGOCORTO: ultimos3,
-                personaNOMBRES: cita.personaNOMBRES || cita.nombre || ""
-            };
-        });
+    let nuevoTurnosParaSerLlamados = [];
 
-        const jsonNuevo = JSON.stringify(armados);
+    // Armamos las citas (si hay)
+    const armadosCitas = citas.map(cita => {
+        const ident = cita.personaIDENTIFICACION || "";
+        const ultimos3 = ident.toString().slice(-3);
+        return {
+            tipo: "Cita",
+            moduloAtencionTITULO: cita.moduloAtencionTITULO || cita.modulo || "",
+            turnoCODIGOCORTO: ultimos3,
+            personaNOMBRES: cita.personaNOMBRES || cita.nombre || "",
+            turnoCODIGOATENCION: cita.citaHASH || ""
+        };
+    });
 
-        if (jsonNuevo !== ultimoEstadoColaParaLlamar) {
-            turnosParaSerLlamados = armados;
-            ultimoEstadoColaParaLlamar = jsonNuevo;
-        }
-    }
+    // Mezcla: primero citas, luego turnos normales
+    nuevoTurnosParaSerLlamados = [
+        ...armadosCitas,
+        ...turnos
+    ];
 
-    if (turnos.length > 0) {
-        const jsonNuevo = JSON.stringify(turnos);
-        if (jsonNuevo !== ultimoEstadoColaParaLlamar) {
-            turnosParaSerLlamados = turnos;
-            ultimoEstadoColaParaLlamar = jsonNuevo;
-        }
+    const jsonNuevo = JSON.stringify(nuevoTurnosParaSerLlamados);
+
+    if (jsonNuevo !== ultimoEstadoColaParaLlamar) {
+        turnosParaSerLlamados = nuevoTurnosParaSerLlamados;
+        ultimoEstadoColaParaLlamar = jsonNuevo;
     }
 };
+
 
 // Actualiza el slider de colas de turnos
 window.actualizarTurnosEnColaDeAtencion = async function () {
@@ -245,13 +248,17 @@ async function solicitarTextoAVoz(textoParaDecir, idPersona) {
 
 function decirDatosTurnoLlamando(turnoEnLlamado) {
     let audio = {};
+    let $textoHablar = "";
     if ((turnosParaSerLlamados.length) === 0) return;
     if (turnosParaSerLlamados.length > 0) {
         if (turnoEnLlamado) {
             if (turnoEnLlamado.tipo === "Cita") {
-                $textoHablar = "Llamando a la cita de "  + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
+                console.log(turnoEnLlamado);
+                $textoHablar = "Llamando a la cita de " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
+                sonarTimbreAfiliados();
             } else {
                 $textoHablar = "Llamando al turno " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
+                sonarTimbreGeneral();
             }
             hablar($textoHablar, turnoEnLlamado.turnoCODIGOATENCION);
 
@@ -320,6 +327,42 @@ function reproducirVOZ(idGenerado) {
         //            reproduciendo = false;
         ////            }
         //        }
+    }
+}
+
+var reproduciendo = false;
+window.idAleatorio = function () {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (var i = 0; i < 5; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    return text;
+}
+window.hablar = function (textoParaDecir, idPersona = idAleatorio()) {
+    if (textoParaDecir != "") {
+        solicitarTextoAVoz(textoParaDecir, idPersona);
+    }
+}
+
+window.reproducirTimbreTipoDeTurno = function () {
+    let tiembreGeneral = document.getElementById('timbreTurnoGeneral');
+    let tiembre = document.getElementById('timbreTurnoGeneral');
+}
+
+window.reproducirRespuestaAPI = function (respuesta) {
+    if (respuesta) {
+        var datos = JSON.parse(respuesta);
+        if (reproductoresVOZ.length) {
+            var reproductor = reproductoresVOZ[datos.id];
+        } else {
+            reproductoresVOZ[datos.id] = document.createElement('audio');
+            reproductoresVOZ[datos.id].setAttribute('id', "sonidoEspanola" + datos.id);
+            reproductoresVOZ[datos.id].setAttribute('src', datos.audio);
+            reproductoresVOZ[datos.id].autoplay = true;
+            reproductoresVOZ[datos.id].muted = true;
+            reproductoresVOZ[datos.id].addEventListener("loadeddata", (event) => {
+            });
+        }
     }
 }
 
@@ -448,8 +491,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('infoZona').textContent = identificadorZonaAtencion;
         modalEle = document.getElementById('llamadoModal');
         modalLlamado = new bootstrap.Modal(modalEle);
-
         document.getElementById('formConfigPantalla').addEventListener("submit", guardarVariablesCofiguracion);
+
         //Llamado periodico que verifica los turnos para llamar
         setInterval(() => {
             actualizarColaTurnosParaSerLlamandos();
@@ -471,6 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500);
 
         renderSliderColasDeAtencion();
+        reproducirSonidoAmbiente();
         setTimeout(abrirPantallaCompletaVideoYoutube, 7000);
     } else {
         modalConfiguraciones.show();
