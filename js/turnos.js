@@ -9,6 +9,7 @@ let turnosEnColasDeAtencion = [],
 let ultimoEstadoTablaTurnos = null;
 let ultimoEstadoColaParaLlamar = null;
 var tiempoTurnosParaSerLlamados,
+    tiempoTurnosLlamadoVoz,
     tiempoRefrescarTablaAtencion,
     tiempoRefrescarSliderColas,
     identificadorSede,
@@ -50,7 +51,7 @@ function realizarLlamadoVoz() {
     }
 
     decirDatosTurnoLlamando();
-    return setTimeout(realizarLlamadoVoz, tiempoTurnosParaSerLlamados || 1000);
+    return setTimeout(realizarLlamadoVoz, tiempoTurnosLlamadoVoz || 1000);
 
 }
 
@@ -317,16 +318,15 @@ function renderLlamadosActivos() {
 //actualiza la cola de turnos que generan el llamado de modal
 // actualiza la cola de turnos que generan el llamado de modal
 window.actualizarColaTurnosParaSerLlamandos = async function () {
-    //const resp = await conectarseEndPoint('mostrarTurnosLlamandoZonasAtencion', identificadorZonaAtencion);
-    const res = await fetch('data.php?operacion=turnosParaSerLlamados');
-    const resp = await res.json();
+    const resp = await conectarseEndPoint('mostrarTurnosLlamandoZonasAtencion', identificadorZonaAtencion);
+    // const res = await fetch('data.php?operacion=turnosParaSerLlamados');
+    // const resp = await res.json();
 
     const datos = resp.DATOS || [];
     const turnos = datos[0] || [];
     const citas = datos[1] || [];
 
     let nuevoTurnosParaSerLlamados = [];
-
     // Armamos las citas (si hay)
     const armadosCitas = citas.map(cita => {
         const ident = cita.personaIDENTIFICACION || "";
@@ -457,6 +457,7 @@ function guardarVariablesCofiguracion() {
     var tiempoLlamadosSlider = document.getElementById('tiempoLlamadosSlider').value || null;
     var tiempoLlamadosTurnosAtencion = document.getElementById('tiempoLlamadosTurnosAtencion').value;
     var tiempoTurnosParaLlamar = document.getElementById('tiempoTurnosParaLlamar').value;
+    var tiempoTurnosLlamadoVoz = document.getElementById('tiempoTurnosLlamadoVoz').value;
     var tiempoParaExpandirVideo = document.getElementById('tiempoParaExpandirVideo').value;
     // ✅ Validación: si no hay sede o zona, NO guarda y NO avanza
     if (!sede || !zona) {
@@ -468,6 +469,7 @@ function guardarVariablesCofiguracion() {
     localStorage.setItem('tiempoLlamadosSlider', tiempoLlamadosSlider * 1000);
     localStorage.setItem('tiempoLlamadosTurnosAtencion', tiempoLlamadosTurnosAtencion * 1000);
     localStorage.setItem('tiempoTurnosParaLlamar', tiempoTurnosParaLlamar * 1000);
+    localStorage.setItem('tiempoTurnosLlamadoVoz', tiempoTurnosLlamadoVoz * 1000);
     localStorage.setItem('tiempoParaExpandirVideo', tiempoParaExpandirVideo * 1000);
 
     window.location.reload();
@@ -513,14 +515,16 @@ function completarFormularioDeConfiguraciones() {
     document.getElementById('tiempoLlamadosSlider').value = localStorage.getItem('tiempoLlamadosSlider') / 1000 || '';
     document.getElementById('tiempoLlamadosTurnosAtencion').value = localStorage.getItem('tiempoLlamadosTurnosAtencion') / 1000 || '';
     document.getElementById('tiempoTurnosParaLlamar').value = localStorage.getItem('tiempoTurnosParaLlamar') / 1000 || '';
+    document.getElementById('tiempoTurnosLlamadoVoz').value = localStorage.getItem('tiempoTurnosLlamadoVoz') / 1000 || '';
     document.getElementById('tiempoParaExpandirVideo').value = localStorage.getItem('tiempoParaExpandirVideo') / 1000 || '';
 }
 // Inicializa todo
 document.addEventListener('DOMContentLoaded', () => {
     modalConfiguraciones = new bootstrap.Modal(document.getElementById('configModal'));
     cargarInformacionSedesZonasAtencion();
-    if (localStorage.getItem('tiempoTurnosParaLlamar') && localStorage.getItem('tiempoLlamadosTurnosAtencion') && localStorage.getItem('tiempoLlamadosSlider') && localStorage.getItem('sedeCCSM') && localStorage.getItem('zonaAtencion')) {
+    if (localStorage.getItem('tiempoTurnosParaLlamar') && localStorage.getItem('tiempoTurnosLlamadoVoz') && localStorage.getItem('tiempoLlamadosTurnosAtencion') && localStorage.getItem('tiempoLlamadosSlider') && localStorage.getItem('sedeCCSM') && localStorage.getItem('zonaAtencion')) {
         tiempoTurnosParaSerLlamados = localStorage.getItem('tiempoTurnosParaLlamar');
+        tiempoTurnosLlamadoVoz = localStorage.getItem('tiempoTurnosLlamadoVoz');
         tiempoRefrescarTablaAtencion = localStorage.getItem('tiempoLlamadosTurnosAtencion');
         tiempoRefrescarSliderColas = localStorage.getItem('tiempoLlamadosSlider');
         tiempoParaExpandirVideo = localStorage.getItem('tiempoParaExpandirVideo') || 3600000; // 1 hora
