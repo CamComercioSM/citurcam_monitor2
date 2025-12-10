@@ -262,6 +262,10 @@ function renderTablaTurnosEnAtencion() {
     const visibles = turnosEnAtencion.slice(0, maxFilas);
 
     visibles.forEach(turno => {
+        if (turno.turnoCODIGOCORTO === null){
+            turno.turnoCODIGOCORTO = '-';
+            turno.personaNOMBRES = '-';
+        }
         tbody.innerHTML += `
         <tr>
             <td>${turno.moduloAtencionTITULO}</td>
@@ -511,7 +515,6 @@ function completarFormularioDeConfiguraciones() {
     document.getElementById('tiempoTurnosParaLlamar').value = localStorage.getItem('tiempoTurnosParaLlamar') / 1000 || '';
     document.getElementById('tiempoParaExpandirVideo').value = localStorage.getItem('tiempoParaExpandirVideo') / 1000 || '';
 }
-
 // Inicializa todo
 document.addEventListener('DOMContentLoaded', () => {
     modalConfiguraciones = new bootstrap.Modal(document.getElementById('configModal'));
