@@ -35,7 +35,7 @@ window.reproducirSonidoAmbiente = function () {
     const audio = document.getElementById("sonidoAmbiente");
     if (!audio) return;
     audio.loop = true;
-    audio.volume = 0.05;
+    audio.volume = 0.02;
     audio.play();
 }
 

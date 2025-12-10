@@ -20,36 +20,196 @@ let splideColas = null;
 let splideRenderizado = false;
 const slider = document.getElementById('sliderColas');
 
-function realizarLlamado() {
-    console.log(turnosParaSerLlamados);
 
+function realizarLlamadoModal() {
+    if (turnosParaSerLlamados.length === 0) {
+        modalLlamado.hide();
+    }
+    renderLlamadosActivos();
+    return setTimeout(realizarLlamadoModal, tiempoTurnosParaSerLlamados || 1000);
+}
+
+function realizarLlamadoVoz() {
     if (turnosParaSerLlamados.length === 0) {
         idxTurno = 0;
         reproductoresVOZ = [];
-        modalLlamado.hide();
-        reproducirSonidoAmbiente();
-        return setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
+        //return setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
     }
-    if (idxTurno > turnosEnColasDeAtencion.length) {
+    if (idxTurno > turnosParaSerLlamados.length) {
         idxTurno = 0;
-        setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
+        //setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
     }
+    // console.log('asignando el turno que debe llamar');
+    // console.log(turnoEnLlamado);
+    // console.log(turnosParaSerLlamados);
+    // console.log('_________________');
 
     turnoEnLlamado = turnosParaSerLlamados[idxTurno];
     if (!turnoEnLlamado) {
         idxTurno = 0;
-        return setTimeout(realizarLlamado, tiempoTurnosParaSerLlamados || 1000);
     }
-    pausarSonidoAmbiente();
-    decirDatosTurnoLlamando(turnoEnLlamado);
-    renderLlamadosActivos(turnosParaSerLlamados);
-    modalLlamado.show();
 
-    setTimeout(() => {
-        renderLlamadosActivos([]);
-        idxTurno += 1;
-        setTimeout(realizarLlamado, 4000);
-    }, 5000);
+    decirDatosTurnoLlamando();
+    return setTimeout(realizarLlamadoVoz, tiempoTurnosParaSerLlamados || 1000);
+
+}
+
+function decirDatosTurnoLlamando() {
+    let audio = {};
+    let $textoHablar = "";
+    if ((turnosParaSerLlamados.length) === 0) return;
+    if (turnosParaSerLlamados.length > 0) {
+        if (turnoEnLlamado) {
+            if (turnoEnLlamado.tipo === "Cita") {
+                $textoHablar = "Llamando a la cita " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
+                sonarTimbreAfiliados();
+            } else {
+                $textoHablar = "Llamando al turno " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
+                sonarTimbreGeneral();
+            }
+            hablar($textoHablar, turnoEnLlamado.turnoCODIGOATENCION);
+            // if (reproductoresVOZ[turnoEnLlamado.turnoCODIGOATENCION]) {
+            //     reproducirVOZ(turnoEnLlamado.turnoCODIGOATENCION);
+            //     //     // audio = reproductoresVOZ[turnoEnLlamado.turnoCODIGOATENCION];
+            //     //     // audio.volume = 1;
+            //     //     // audio.muted = false;
+            //     //     // audio.load();
+            //     //     // audio.play().catch(err => {
+            //     //     //     console.warn('No se pudo reproducir audio:', err);
+            //     //     // });
+            // }
+        }
+    }
+    console.log("Llamando al turno: ");
+    console.log(turnoEnLlamado);
+    console.log(idxTurno);
+    //setTimeout(decirDatosTurnoLlamando, 1000);
+    //// console.log("hablar "+ diciendo );
+}
+
+var reproduciendo = false;
+window.idAleatorio = function () {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for (var i = 0; i < 5; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    return text;
+}
+window.hablar = function (textoParaDecir, idPersona = idAleatorio()) {
+    if (textoParaDecir != "") {
+        console.log("Solicitando voz para: " + textoParaDecir);
+        solicitarTextoAVoz(textoParaDecir, idPersona);
+
+    }
+}
+// Se recomienda envolver el llamado en una función async para usar await
+async function solicitarTextoAVoz(textoParaDecir, idPersona) {
+    try {
+        // Llamada POST al endpoint usando fetch
+        const response = await fetch("https://monitor.citurcam.com/apis/text-to-speech.php", {
+            method: "POST",
+            headers: {
+                // Formato de envío tipo formulario tradicional
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                texto: textoParaDecir,
+                persona: idPersona
+            }),
+            // Los siguientes parámetros de jQuery no aplican en fetch:
+            // async: true, cache: true, timeout: 234567
+        });
+
+        // Leer la respuesta como texto (puede ser la URL o datos del MP3)
+        const respuesta = await response.text();
+        //console.log("respuesta de la API ");
+        //console.log(respuesta);
+
+        crearReproductorRespuestaAPI(respuesta);
+        // Retornar si se necesita la respuesta para otros usos
+        return respuesta;
+
+    } catch (error) {
+        // Manejo de errores de red o de servidor
+        console.error('Error al solicitar texto a voz:', error);
+    }
+}
+window.crearReproductorRespuestaAPI = function (respuesta) {
+    var reproductorActivo;
+    if (respuesta) {
+        var datos = JSON.parse(respuesta);
+
+        reproductoresVOZ[datos.id] = document.createElement('audio');
+        reproductoresVOZ[datos.id].setAttribute('id', "sonidoEspanola" + datos.id);
+        reproductoresVOZ[datos.id].setAttribute('src', datos.audio);
+        reproductoresVOZ[datos.id].autoplay = true;
+        reproductoresVOZ[datos.id].muted = true;
+        reproductoresVOZ[datos.id].addEventListener("loadeddata", (event) => {
+
+        });
+
+        reproductorActivo = reproductoresVOZ[datos.id];
+    }
+
+    console.log("listado de resproductos creados");
+    console.log(reproductoresVOZ);
+    //console.log("el repdocutor para darle play");
+    //console.log(reproductorActivo);
+    reproducirVOZ(datos.id);
+}
+
+function reproducirVOZ(idGenerado) {
+    var media = reproductoresVOZ[idGenerado];
+    console.log("objeto reproductor generado");
+    if (media) {
+        media.volume = 1;
+        media.load();
+        media.muted = false;
+        const playPromise = media.play();
+        //        // console.log(playPromise);
+        const promise2 = playPromise.then(
+            function () {
+                if (!reproduciendo) {
+                    reproduciendo = true;
+                    console.log("REPRODUCIENDO MP3 de la española nuevamente " + idGenerado + "");
+                    reproduciendo = false;
+                }
+                idxTurno++;
+                if (idxTurno >= turnosParaSerLlamados.length) {
+                    idxTurno = 0;
+                }
+            },
+            function () {
+                playPromise.catch((error) => {
+                    if (error) {
+                        console.log("intentando cargar MP3 de la española nuevamente " + idGenerado);
+                        setTimeout(function () {
+                            reproducirVOZ(idGenerado);
+                        }, (media.duration * 1000));
+                    }
+                });
+            }
+        );
+        //        if (playPromise !== null) {
+        //            playPromise.catch((error) => {
+        //                if (error) {
+        //                    registroAccionesConsola("intentando cargar MP3 de la española nuevamente " + idGenerado);
+        //                    setTimeout(function () {
+        //                        reproducirVOZ(idGenerado);
+        //                    }, 1234);
+        //                }
+        //            });
+        //        } else {
+        ////            if (!reproduciendo) {
+        //            registroAccionesConsola("REPRODUCIENDO MP3 de la española nuevamente " + idGenerado + "");
+        //            reproduciendo = true;
+        //            media.volume = 1;
+        //            media.muted = false;
+        //            media.play();
+        //            reproduciendo = false;
+        ////            }
+        //        }
+    }
 }
 
 async function renderSliderColasDeAtencion() {
@@ -111,16 +271,22 @@ function renderTablaTurnosEnAtencion() {
         `;
     });
 }
-actualizarTablaTurnosEnAtencion().then(() => {
-    renderTablaTurnosEnAtencion();
-});
+// actualizarTablaTurnosEnAtencion().then(() => {
+//     renderTablaTurnosEnAtencion();
+// });
 
 
 // Renderiza llamados activos en el modal
-function renderLlamadosActivos(llamadosActivosPorRenderizar) {
-    if (llamadosActivosPorRenderizar !== turnosParaSerLlamados) return;
+function renderLlamadosActivos() {
+    if (turnosParaSerLlamados.length === 0) return;
     const cont = document.getElementById('llamadosActivos');
     cont.innerHTML = '';
+
+
+    // console.log('antes de abrir el modal');
+    // console.log(turnoEnLlamado);
+    // console.log(turnosParaSerLlamados);
+    // console.log('_________________');
 
     // Definimos los colores por tipo
     const colores = {
@@ -129,7 +295,7 @@ function renderLlamadosActivos(llamadosActivosPorRenderizar) {
         General: 'bg-primary',
         Cita: 'bg-success'
     };
-    llamadosActivosPorRenderizar.forEach(llamado => {
+    turnosParaSerLlamados.forEach(llamado => {
         // Elegimos el color; si no existe tipo, usamos general
         const color = colores[llamado.tipo] || 'bg-primary';
 
@@ -141,12 +307,13 @@ function renderLlamadosActivos(llamadosActivosPorRenderizar) {
       </div>
     `;
     });
+    modalLlamado.show();
 }
 
 //actualiza la cola de turnos que generan el llamado de modal
 // actualiza la cola de turnos que generan el llamado de modal
 window.actualizarColaTurnosParaSerLlamandos = async function () {
-    // const resp = await conectarseEndPoint('mostrarTurnosLlamandoZonasAtencion', identificadorZonaAtencion);
+    //const resp = await conectarseEndPoint('mostrarTurnosLlamandoZonasAtencion', identificadorZonaAtencion);
     const res = await fetch('data.php?operacion=turnosParaSerLlamados');
     const resp = await res.json();
 
@@ -175,12 +342,25 @@ window.actualizarColaTurnosParaSerLlamandos = async function () {
         ...turnos
     ];
 
+    // console.log('antes de comparar');
+    // console.log(nuevoTurnosParaSerLlamados);
+    // console.log(turnosParaSerLlamados);
+    // console.log(ultimoEstadoColaParaLlamar);
+    // console.log('_________________');
+
     const jsonNuevo = JSON.stringify(nuevoTurnosParaSerLlamados);
 
     if (jsonNuevo !== ultimoEstadoColaParaLlamar) {
         turnosParaSerLlamados = nuevoTurnosParaSerLlamados;
         ultimoEstadoColaParaLlamar = jsonNuevo;
     }
+
+
+    // console.log('despues de comparar');
+    // console.log(nuevoTurnosParaSerLlamados);
+    // console.log(turnosParaSerLlamados);
+    // console.log('_________________');
+
 };
 
 
@@ -205,165 +385,13 @@ async function actualizarTablaTurnosEnAtencion() {
     if (jsonNuevo !== ultimoEstadoTablaTurnos) {
         turnosEnAtencion = nuevosTurnos;
         ultimoEstadoTablaTurnos = jsonNuevo;
-        console.log('Tabla de turnos en atención actualizada');
     }
 
-}
-// function registroAccionesConsola(TXT = "") {
-//     let fecha = new Date();
-//     document.getElementById('consola').innerHTML += ((fecha.toLocaleTimeString() + '; ' + TXT) + " <br /> ");
-//     console.log(TXT);
-// }
-
-// Se recomienda envolver el llamado en una función async para usar await
-async function solicitarTextoAVoz(textoParaDecir, idPersona) {
-    try {
-        // Llamada POST al endpoint usando fetch
-        const response = await fetch("https://monitor.citurcam.com/apis/text-to-speech.php", {
-            method: "POST",
-            headers: {
-                // Formato de envío tipo formulario tradicional
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: new URLSearchParams({
-                texto: textoParaDecir,
-                persona: idPersona
-            }),
-            // Los siguientes parámetros de jQuery no aplican en fetch:
-            // async: true, cache: true, timeout: 234567
-        });
-
-        // Leer la respuesta como texto (puede ser la URL o datos del MP3)
-        const respuesta = await response.text();
-
-        reproducirRespuestaAPI(respuesta);
-        // Retornar si se necesita la respuesta para otros usos
-        return respuesta;
-
-    } catch (error) {
-        // Manejo de errores de red o de servidor
-        console.error('Error al solicitar texto a voz:', error);
-    }
-}
-
-function decirDatosTurnoLlamando(turnoEnLlamado) {
-    let audio = {};
-    let $textoHablar = "";
-    if ((turnosParaSerLlamados.length) === 0) return;
-    if (turnosParaSerLlamados.length > 0) {
-        if (turnoEnLlamado) {
-            if (turnoEnLlamado.tipo === "Cita") {
-                console.log(turnoEnLlamado);
-                $textoHablar = "Llamando a la cita de " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
-                sonarTimbreAfiliados();
-            } else {
-                $textoHablar = "Llamando al turno " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES;
-                sonarTimbreGeneral();
-            }
-            hablar($textoHablar, turnoEnLlamado.turnoCODIGOATENCION);
-
-            if (reproductoresVOZ[turnoEnLlamado.turnoCODIGOATENCION]) {
-                reproducirVOZ(turnoEnLlamado.turnoCODIGOATENCION);
-                // audio = reproductoresVOZ[turnoEnLlamado.turnoCODIGOATENCION];
-                // audio.volume = 1;
-                // audio.muted = false;
-                // audio.load();
-                // audio.play().catch(err => {
-                //     console.warn('No se pudo reproducir audio:', err);
-                // });
-            }
-        }
-    }
-    setTimeout(decirDatosTurnoLlamando, (audio.duration * 1000) + 2000);
-    ////console.log("hablar "+ diciendo );
-}
-
-function reproducirVOZ(idGenerado) {
-    var media = reproductoresVOZ[idGenerado];
-    //    console.log("objeto reproductor generado");
-    if (media) {
-        media.volume = 1;
-        media.load();
-        media.muted = false;
-        const playPromise = media.play();
-        //        console.log(playPromise);
-        const promise2 = playPromise.then(
-            function () {
-                if (!reproduciendo) {
-                    reproduciendo = true;
-                    //registroAccionesConsola("REPRODUCIENDO MP3 de la española nuevamente " + idGenerado + "");
-                    reproduciendo = false;
-                }
-            },
-            function () {
-                playPromise.catch((error) => {
-                    if (error) {
-                        //registroAccionesConsola("intentando cargar MP3 de la española nuevamente " + idGenerado);
-                        setTimeout(function () {
-                            reproducirVOZ(idGenerado);
-                        }, (media.duration * 1000) + 2000);
-                    }
-                });
-            }
-        );
-
-
-        //        if (playPromise !== null) {
-        //            playPromise.catch((error) => {
-        //                if (error) {
-        //                    registroAccionesConsola("intentando cargar MP3 de la española nuevamente " + idGenerado);
-        //                    setTimeout(function () {
-        //                        reproducirVOZ(idGenerado);
-        //                    }, 1234);
-        //                }
-        //            });
-        //        } else {
-        ////            if (!reproduciendo) {
-        //            registroAccionesConsola("REPRODUCIENDO MP3 de la española nuevamente " + idGenerado + "");
-        //            reproduciendo = true;
-        //            media.volume = 1;
-        //            media.muted = false;
-        //            media.play();
-        //            reproduciendo = false;
-        ////            }
-        //        }
-    }
-}
-
-var reproduciendo = false;
-window.idAleatorio = function () {
-    var text = "";
-    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    for (var i = 0; i < 5; i++)
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    return text;
-}
-window.hablar = function (textoParaDecir, idPersona = idAleatorio()) {
-    if (textoParaDecir != "") {
-        solicitarTextoAVoz(textoParaDecir, idPersona);
-    }
 }
 
 window.reproducirTimbreTipoDeTurno = function () {
     let tiembreGeneral = document.getElementById('timbreTurnoGeneral');
     let tiembre = document.getElementById('timbreTurnoGeneral');
-}
-
-window.reproducirRespuestaAPI = function (respuesta) {
-    if (respuesta) {
-        var datos = JSON.parse(respuesta);
-        if (reproductoresVOZ.length) {
-            var reproductor = reproductoresVOZ[datos.id];
-        } else {
-            reproductoresVOZ[datos.id] = document.createElement('audio');
-            reproductoresVOZ[datos.id].setAttribute('id', "sonidoEspanola" + datos.id);
-            reproductoresVOZ[datos.id].setAttribute('src', datos.audio);
-            reproductoresVOZ[datos.id].autoplay = true;
-            reproductoresVOZ[datos.id].muted = true;
-            reproductoresVOZ[datos.id].addEventListener("loadeddata", (event) => {
-            });
-        }
-    }
 }
 
 var video;
@@ -420,14 +448,17 @@ function contraerVideo() {
 }
 
 function guardarVariablesCofiguracion() {
-
     var sede = document.getElementById('sedesCCSM').value;
     var zona = document.getElementById('zonasAtencion').value;
     var tiempoLlamadosSlider = document.getElementById('tiempoLlamadosSlider').value || null;
     var tiempoLlamadosTurnosAtencion = document.getElementById('tiempoLlamadosTurnosAtencion').value;
     var tiempoTurnosParaLlamar = document.getElementById('tiempoTurnosParaLlamar').value;
     var tiempoParaExpandirVideo = document.getElementById('tiempoParaExpandirVideo').value;
-
+    // ✅ Validación: si no hay sede o zona, NO guarda y NO avanza
+    if (!sede || !zona) {
+        alert('Debes seleccionar una sede y una zona de atención antes de continuar.');
+        return false;
+    }
     localStorage.setItem('sedeCCSM', sede);
     localStorage.setItem('zonaAtencion', zona);
     localStorage.setItem('tiempoLlamadosSlider', tiempoLlamadosSlider * 1000);
@@ -474,7 +505,12 @@ async function cargarInformacionSedesZonasAtencion() {
         });
     });
 }
-
+function completarFormularioDeConfiguraciones() {
+    document.getElementById('tiempoLlamadosSlider').value = localStorage.getItem('tiempoLlamadosSlider') / 1000 || '';
+    document.getElementById('tiempoLlamadosTurnosAtencion').value = localStorage.getItem('tiempoLlamadosTurnosAtencion') / 1000 || '';
+    document.getElementById('tiempoTurnosParaLlamar').value = localStorage.getItem('tiempoTurnosParaLlamar') / 1000 || '';
+    document.getElementById('tiempoParaExpandirVideo').value = localStorage.getItem('tiempoParaExpandirVideo') / 1000 || '';
+}
 
 // Inicializa todo
 document.addEventListener('DOMContentLoaded', () => {
@@ -493,11 +529,12 @@ document.addEventListener('DOMContentLoaded', () => {
         modalLlamado = new bootstrap.Modal(modalEle);
         document.getElementById('formConfigPantalla').addEventListener("submit", guardarVariablesCofiguracion);
 
-        //Llamado periodico que verifica los turnos para llamar
+        // //Llamado periodico que verifica los turnos para llamar
         setInterval(() => {
             actualizarColaTurnosParaSerLlamandos();
         }, tiempoTurnosParaSerLlamados || 1000);
-        realizarLlamado();
+        realizarLlamadoModal();
+        realizarLlamadoVoz();
         // Llanado periordico que verifica las colas de atencion y las actualiza el slider si es necesario
         setInterval(() => {
             actualizarTurnosEnColaDeAtencion();
@@ -509,12 +546,11 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(() => {
             renderTablaTurnosEnAtencion();
         }, 5000);
-        setTimeout(() => {
-            decirDatosTurnoLlamando(turnoEnLlamado);
-        }, 1500);
 
         renderSliderColasDeAtencion();
         reproducirSonidoAmbiente();
+        decirDatosTurnoLlamando();
+
         setTimeout(abrirPantallaCompletaVideoYoutube, 7000);
     } else {
         modalConfiguraciones.show();

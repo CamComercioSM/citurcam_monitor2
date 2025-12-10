@@ -77,6 +77,7 @@
     <div class="row m-0 px-2 pt-2 pb-1" style="height: 1vh;">
       <div class="col-12 d-flex justify-content-between align-items-center">
         <button id="btnConfigMonitor"
+          onclick="completarFormularioDeConfiguraciones()"
           data-bs-toggle="modal"
           data-bs-target="#configModal">
           <!-- Aquí va tu icono -->
@@ -97,7 +98,7 @@
         <form id="formConfigPantalla">
 
           <div class="modal-header">
-            <h5 class="modal-title">Configuración de pantalla</h5>
+            <h5 class="modal-title text-white">Configuración de pantalla</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <!-- Aquí tu JS va a inyectar todo -->
@@ -105,13 +106,13 @@
             <div class="modal-body">
           <div class="mb-3">
             <label for="sedesCCSM" class="form-label">Sedes</label>
-            <select class="form-select" id="sedesCCSM">
+            <select class="form-select" id="sedesCCSM" require>
             </select>
           </div>
 
           <div class="mb-3">
             <label for="zonasAtencion" class="form-label">Zonas de Atención</label>
-            <select class="form-select" id="zonasAtencion">
+            <select class="form-select" id="zonasAtencion" require>
             </select>
           </div>
           <div class="mb-3">
