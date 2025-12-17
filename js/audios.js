@@ -50,6 +50,13 @@ window.sonarTimbreAfiliados = function () {
 
 
 
+window.reproducirTimbreTipoDeTurno = function () {
+    let tiembreGeneral = document.getElementById('timbreTurnoGeneral');
+    let tiembre = document.getElementById('timbreTurnoGeneral');
+}
+
+
+
 
 let colaVoz = [];
 let audioEnReproduccion = false;
