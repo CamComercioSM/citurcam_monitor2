@@ -58,6 +58,7 @@ function expandirVideo() {
     document.body.classList.add('video-expand-active');
 
     if (video) {
+        video.unMute();
         video.setVolume(10);
     }
     videoExpandido = true;
