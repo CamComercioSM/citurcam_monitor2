@@ -17,38 +17,9 @@ window.conectarseEndPoint = async function (operacion, params = {}) {
 
     return await response.json();
 }
-window.sonarTimbreGeneral = function () {
-    const audio = document.getElementById("timbreTurnoGeneral");
-    if (!audio) return;
-    audio.currentTime = 0;
-    audio.play();
-}
-
-window.sonarTimbreAfiliados = function () {
-    const audio = document.getElementById("timbreTurnoAfiliados");
-    if (!audio) return;
-    audio.currentTime = 0;
-    audio.play();
-}
-
-window.reproducirSonidoAmbiente = function () {
-    const audio = document.getElementById("sonidoAmbiente");
-    if (!audio) return;
-    audio.loop = true;
-    audio.volume = 0.02;
-    audio.play();
-}
-
-window.pausarSonidoAmbiente = function () {
-    const audio = document.getElementById("sonidoAmbiente");
-    if (!audio) return;
-    audio.volume = 0.0;
-    audio.pause();
-}
 
 let internetActivo = true;
 let reproduciendoCaidaInternet = false;
-var audioCaidaInternet = document.getElementById('vozCaidaInternet');
 async function verificarInternet() {
     try {
         const response = await fetch('/?_=' + Date.now(), {
@@ -87,7 +58,7 @@ function manejarCaidaInternet() {
     }
 
     // Vaciar cola de voz (opcional, recomendado)
-    colaVoz = [];
+    //colaVoz = [];
     audioEnReproduccion = false;
 
     reproduciendoCaidaInternet = true;

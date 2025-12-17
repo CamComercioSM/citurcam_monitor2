@@ -1,6 +1,102 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* 🔒 Nunca scroll global */
+}
+
+
+
 body {
     background: #f7f7fc;
 }
+
+.monitor-layout {
+  height: 100vh;
+  display: grid;
+  grid-template-rows:
+    minmax(40vh, 40vh)   /* Zona superior */
+    minmax(50vh, 55vh)   /* Zona inferior */
+    minmax(5vh, 5vh);                /* Pie */
+  background: #f8f9fa;
+}
+
+.zona-superior {
+  overflow: hidden;
+  padding-top: 10px;
+}
+
+#colasSlider,
+#colasSlider .splide__track,
+#colasSlider .splide__list,
+#colasSlider .splide__slide {
+  height: 100%;
+  padding: 10px;
+}
+
+
+.zona-inferior {
+  overflow: hidden; /* ❌ scroll visible */
+}
+
+.contenedor-tarjetas {
+  height: 100%;
+  overflow-y: auto;
+  padding: 1rem;
+}
+/* Chrome, Edge, Chromium */
+.contenedor-tarjetas::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* Firefox */
+.contenedor-tarjetas {
+  scrollbar-width: none;
+}
+
+/* IE / Edge viejo */
+.contenedor-tarjetas {
+  -ms-overflow-style: none;
+}
+
+.zona-pie {
+  height: 40px;
+  font-size: 0.85rem;
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+
+.zona-pie:hover {
+  opacity: 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .carousel-item {
     min-height: auto; /* permite crecer verticalmente */
@@ -61,8 +157,8 @@ body.video-expand-active #videoPlayList {
 
 /* tarjeta: ocupa todo el alto del slide */
 #colasSlider .card-slider {
-    width: 95% !important;
-    height: 90% !important;
+    width: 100% !important;
+    height: 100% !important;
     margin: 0 !important;
     border: 0 !important;
     border-radius: 1.5rem;
@@ -86,10 +182,8 @@ body.video-expand-active #videoPlayList {
     line-height: 1;
 }
 .video-wrapper{
-  width: min(850px, 100%);   /* ancho elegante, responsive */
-  margin-right: 1.5rem;      /* aire contra el borde derecho */
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
+  width: min(100%, 100%);   /* ancho elegante, responsive */
+  height: min(100%, 100%);    
 }
 
 .video-wrapper .ratio{

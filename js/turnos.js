@@ -45,52 +45,6 @@ window.idAleatorio = function () {
 }
 
 
-async function renderSliderTurnosEnAtencion() {
-    const respuesta = await conectarseEndPoint('atendiendoPorModulosPorZonasAtencion', identificadorZonaAtencion);
-    turnosEnAtencion = respuesta.DATOS || [];
-    if (!splideRenderizado) {
-        slider.innerHTML = '';
-        turnosEnAtencion.forEach((cola) => {
-            if (!cola.turnoCODIGOCORTO) {
-                cola.turnoCODIGOCORTO = '-';
-            }
-            const li = document.createElement('li');
-            li.className = 'splide__slide d-flex';
-            li.innerHTML = `
-        <div class="card card-slider shadow p-3 mb-2 text-center mx-auto w-100">
-          <div class="cola_${cola.turnoTipoServicioID} slider-title">${cola.moduloAtencionTITULO}</div>
-          <div class="cola_${cola.turnoTipoServicioID} slider-qty">${cola.turnoCODIGOCORTO}</div>
-        </div>
-      `;
-            slider.appendChild(li);
-        });
-
-        // Montar Splide una sola vez
-        splideColas = new Splide('#colasSlider', {
-            type: 'loop',
-            perPage: 3,
-            perMove: 1,
-            autoplay: true,
-            interval: 1000,
-            pauseOnHover: false,
-        }).mount();
-
-        splideRenderizado = true;
-
-    }
-}
-// Actualiza el slider de colas de turnos
-window.actualizarTurnosEnAtencion = async function () {
-    const respuesta = await conectarseEndPoint('mostrarTotalTurnosPendientesPorZonasPorTiposServicios', identificadorZonaAtencion);
-    turnosEnAtencion = respuesta.DATOS || [];
-    turnosEnAtencion.forEach((turno) => {
-        const cantidades = slider.querySelectorAll(`.cola_${turno.turnoTipoServicioID}.slider-qty`);
-
-        cantidades.forEach((nodo) => {
-            nodo.textContent = turno.turnosPENDIENTES;
-        });
-    });
-};
 
 // Renderiza tabla de turnos en atención
 function renderTarjetasTurnosEnColaDeAtencion() {
@@ -131,18 +85,6 @@ function renderTarjetasTurnosEnColaDeAtencion() {
     });
 }
 
-
-async function actualizarTablaTurnosEnAtencion() {
-    const turnosParaTablaDeAtencion = await conectarseEndPoint('mostrarTotalTurnosPendientesPorZonasPorTiposServicios', identificadorZonaAtencion);
-    const nuevosTurnos = turnosParaTablaDeAtencion.DATOS || [];
-
-    const jsonNuevo = JSON.stringify(nuevosTurnos);
-    if (jsonNuevo !== ultimoEstadoTablaTurnos) {
-        turnosEnColasDeAtencion = nuevosTurnos;
-        ultimoEstadoTablaTurnos = jsonNuevo;
-    }
-
-}
 // Renderiza llamados activos en el modal
 function renderLlamadosActivos() {
     if (turnosParaSerLlamados.length === 0) return;
@@ -231,11 +173,6 @@ window.actualizarColaTurnosParaSerLlamandos = async function () {
 
 
 
-window.reproducirTimbreTipoDeTurno = function () {
-    let tiembreGeneral = document.getElementById('timbreTurnoGeneral');
-    let tiembre = document.getElementById('timbreTurnoGeneral');
-}
-
 function guardarVariablesCofiguracion() {
     var sede = document.getElementById('sedesCCSM').value;
     var zona = document.getElementById('zonasAtencion').value;
@@ -302,135 +239,6 @@ function completarFormularioDeConfiguraciones() {
     document.getElementById('tiempoTurnosParaLlamar').value = localStorage.getItem('tiempoTurnosParaLlamar') / 1000 || '';
     document.getElementById('tiempoTurnosLlamadoVoz').value = localStorage.getItem('tiempoTurnosLlamadoVoz') / 1000 || '';
     document.getElementById('tiempoParaExpandirVideo').value = localStorage.getItem('tiempoParaExpandirVideo') / 1000 || '';
-}
-
-let colaVoz = [];
-let audioEnReproduccion = false;
-let audioActual = null;
-function realizarLlamadoVoz() {
-    if (audioEnReproduccion) {
-        return setTimeout(realizarLlamadoVoz, tiempoTurnosLlamadoVoz || 1000);
-    }
-
-    if (turnosParaSerLlamados.length === 0) {
-        idxTurno = 0;
-        colaVoz = [];
-        return setTimeout(realizarLlamadoVoz, tiempoTurnosLlamadoVoz || 1000);
-    }
-
-    turnoEnLlamado = turnosParaSerLlamados[idxTurno];
-    if (turnoEnLlamado) {
-        decirDatosTurnoLlamando();
-    }
-
-    return setTimeout(realizarLlamadoVoz, tiempoTurnosLlamadoVoz || 1000);
-}
-function decirDatosTurnoLlamando() {
-    let audio = {};
-    let $textoHablar = "";
-    if ((turnosParaSerLlamados.length) === 0) return;
-    if (turnosParaSerLlamados.length > 0) {
-        if (turnoEnLlamado) {
-            if (turnoEnLlamado.tipo === "Cita") {
-                $textoHablar = "Llamando a la cita " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES + ";" + turnoEnLlamado.moduloAtencionTITULO;
-                sonarTimbreAfiliados();
-            } else {
-                $textoHablar = "Llamando a " + turnoEnLlamado.personaNOMBRES + " con el turno " + turnoEnLlamado.turnoCODIGOCORTO + "; Modulo " + turnoEnLlamado.moduloAtencionTITULO + ".";
-                sonarTimbreGeneral();
-            }
-            hablar($textoHablar, turnoEnLlamado.turnoCODIGOATENCION);
-        }
-    }
-    console.log("Llamando al turno: ");
-    console.log(turnoEnLlamado);
-    console.log(idxTurno);
-}
-function hablar(textoParaDecir, idTurno) {
-    if (!textoParaDecir) return;
-
-    // Evitar duplicados en cola
-    const existe = colaVoz.some(item => item.idTurno === idTurno);
-    if (existe) return;
-
-    colaVoz.push({
-        texto: textoParaDecir,
-        idTurno: idTurno
-    });
-
-    procesarColaVoz();
-}
-async function procesarColaVoz() {
-    if (audioEnReproduccion) return;
-    if (colaVoz.length === 0) return;
-
-    audioEnReproduccion = true;
-    const item = colaVoz.shift();
-
-    try {
-        const audioURL = await solicitarTextoAVoz(item.texto, item.idTurno);
-        reproducirAudioSecuencial(audioURL);
-    } catch (e) {
-        console.error('Error en TTS:', e);
-        audioEnReproduccion = false;
-        procesarColaVoz();
-    }
-}
-// Se recomienda envolver el llamado en una función async para usar await
-async function solicitarTextoAVoz(textoParaDecir, idPersona) {
-    try {
-        // Llamada POST al endpoint usando fetch
-        const response = await fetch("https://monitor.citurcam.com/apis/text-to-speech.php", {
-            method: "POST",
-            headers: {
-                // Formato de envío tipo formulario tradicional
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: new URLSearchParams({
-                texto: textoParaDecir,
-                persona: idPersona
-            }),
-            // Los siguientes parámetros de jQuery no aplican en fetch:
-            // async: true, cache: true, timeout: 234567
-        });
-
-        // Leer la respuesta como texto (puede ser la URL o datos del MP3)
-        const respuesta = await response.text();
-        // Retornar si se necesita la respuesta para otros usos        
-        const datos = JSON.parse(respuesta);
-        return datos.audio;
-    } catch (error) {
-        // Manejo de errores de red o de servidor
-        console.error('Error al solicitar texto a voz:', error);
-    }
-}
-function reproducirAudioSecuencial(src) {
-    if (audioActual) {
-        audioActual.pause();
-        audioActual = null;
-    }
-
-    audioActual = new Audio(src);
-    audioActual.volume = 1;
-
-    audioActual.onended = () => {
-        audioEnReproduccion = false;
-        audioActual = null;
-
-        idxTurno++;
-        if (idxTurno >= turnosParaSerLlamados.length) {
-            idxTurno = 0;
-        }
-
-        procesarColaVoz();
-    };
-
-    audioActual.onerror = () => {
-        console.error('Error reproduciendo audio');
-        audioEnReproduccion = false;
-        procesarColaVoz();
-    };
-
-    audioActual.play();
 }
 
 
