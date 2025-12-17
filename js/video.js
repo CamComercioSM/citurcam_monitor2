@@ -57,8 +57,8 @@ function expandirVideo() {
 
     document.body.classList.add('video-expand-active');
 
-    if (typeof video.setVolume === 'function') {
-        video.setVolume(50);
+    if (video) {
+        video.setVolume(10);
     }
     videoExpandido = true;
 
