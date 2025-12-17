@@ -1,5 +1,5 @@
-let turnosEnColasDeAtencion = [],
-    turnosEnAtencion = [],
+let turnosEnAtencion = [],
+    turnosEnColasDeAtencion = [],
     turnosParaSerLlamados = [],
     llamadosExcedidos = [],
     modalLlamado = null,
@@ -45,19 +45,21 @@ window.idAleatorio = function () {
 }
 
 
-async function renderSliderColasDeAtencion() {
-    const respuesta = await conectarseEndPoint('mostrarTotalTurnosPendientesPorZonasPorTiposServicios', identificadorZonaAtencion);
-    turnosEnColasDeAtencion = respuesta.DATOS || [];
+async function renderSliderTurnosEnAtencion() {
+    const respuesta = await conectarseEndPoint('atendiendoPorModulosPorZonasAtencion', identificadorZonaAtencion);
+    turnosEnAtencion = respuesta.DATOS || [];
     if (!splideRenderizado) {
         slider.innerHTML = '';
-        turnosEnColasDeAtencion.forEach((cola) => {
+        turnosEnAtencion.forEach((cola) => {
+            if (!cola.turnoCODIGOCORTO) {
+                cola.turnoCODIGOCORTO = '-';
+            }
             const li = document.createElement('li');
             li.className = 'splide__slide d-flex';
             li.innerHTML = `
         <div class="card card-slider shadow p-3 mb-2 text-center mx-auto w-100">
-          <div class="cola_${cola.turnoTipoServicioID} slider-title">${cola.turnoTipoServicioTITULO}</div>
-          <div class="cola_${cola.turnoTipoServicioID} slider-qty">${cola.turnosPENDIENTES}</div>
-          <small>pendientes</small>
+          <div class="cola_${cola.turnoTipoServicioID} slider-title">${cola.moduloAtencionTITULO}</div>
+          <div class="cola_${cola.turnoTipoServicioID} slider-qty">${cola.turnoCODIGOCORTO}</div>
         </div>
       `;
             slider.appendChild(li);
@@ -66,10 +68,10 @@ async function renderSliderColasDeAtencion() {
         // Montar Splide una sola vez
         splideColas = new Splide('#colasSlider', {
             type: 'loop',
-            perPage: 5,
-            perMove: 5,
+            perPage: 3,
+            perMove: 1,
             autoplay: true,
-            interval: 3000,
+            interval: 1000,
             pauseOnHover: false,
         }).mount();
 
@@ -77,42 +79,70 @@ async function renderSliderColasDeAtencion() {
 
     }
 }
+// Actualiza el slider de colas de turnos
+window.actualizarTurnosEnAtencion = async function () {
+    const respuesta = await conectarseEndPoint('mostrarTotalTurnosPendientesPorZonasPorTiposServicios', identificadorZonaAtencion);
+    turnosEnAtencion = respuesta.DATOS || [];
+    turnosEnAtencion.forEach((turno) => {
+        const cantidades = slider.querySelectorAll(`.cola_${turno.turnoTipoServicioID}.slider-qty`);
+
+        cantidades.forEach((nodo) => {
+            nodo.textContent = turno.turnosPENDIENTES;
+        });
+    });
+};
 
 // Renderiza tabla de turnos en atención
-function renderTablaTurnosEnAtencion() {
-    const tbody = document.getElementById('tablaAtencion');
-    tbody.innerHTML = '';
+function renderTarjetasTurnosEnColaDeAtencion() {
+    const contenedor = document.getElementById('tarjetasAtencion');
+    contenedor.innerHTML = '';
 
-    const estilos = getComputedStyle(document.documentElement);
-    const maxFilas = parseInt(estilos.getPropertyValue('--filas-visibles')) || 5;
+    turnosEnColasDeAtencion.forEach(turno => {
+        const titulo = turno.turnoTipoServicioTITULO ?? '-';
+        const pendientes = turno.turnosPENDIENTES ?? '-';
 
-    // rotación del arreglo que ya tenemos en memoria
-    if (turnosEnAtencion.length > maxFilas) {
-        const primero = turnosEnAtencion.shift();
-        turnosEnAtencion.push(primero);
-    }
+        contenedor.innerHTML += `
+        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+          <div class="card h-100 shadow rounded-4 border-0 tarjeta-turno">
+            <div class="card-body d-flex flex-column justify-content-between text-center p-3">
+              
+              <div>
+                <div class="text-uppercase fw-semibold text-muted small mb-1">
+                  Módulo
+                </div>
+                <div class="fw-bold fs-5">
+                  ${titulo}
+                </div>
+              </div>
 
-    const visibles = turnosEnAtencion.slice(0, maxFilas);
+              <div class="mt-3">
+                <div class="text-muted small">
+                  Turnos pendientes
+                </div>
+                <div class="fw-bold display-6 text-primary">
+                  ${pendientes}
+                </div>
+              </div>
 
-    visibles.forEach(turno => {
-        if (turno.turnoCODIGOCORTO === null) {
-            turno.turnoCODIGOCORTO = '-';
-            turno.personaNOMBRES = '-';
-        }
-        tbody.innerHTML += `
-        <tr>
-            <td>${turno.moduloAtencionTITULO}</td>
-            <td>${turno.turnoCODIGOCORTO}</td>
-            <td>${turno.personaNOMBRES}</td>
-        </tr>
+            </div>
+          </div>
+        </div>
         `;
     });
 }
-// actualizarTablaTurnosEnAtencion().then(() => {
-//     renderTablaTurnosEnAtencion();
-// });
 
 
+async function actualizarTablaTurnosEnAtencion() {
+    const turnosParaTablaDeAtencion = await conectarseEndPoint('mostrarTotalTurnosPendientesPorZonasPorTiposServicios', identificadorZonaAtencion);
+    const nuevosTurnos = turnosParaTablaDeAtencion.DATOS || [];
+
+    const jsonNuevo = JSON.stringify(nuevosTurnos);
+    if (jsonNuevo !== ultimoEstadoTablaTurnos) {
+        turnosEnColasDeAtencion = nuevosTurnos;
+        ultimoEstadoTablaTurnos = jsonNuevo;
+    }
+
+}
 // Renderiza llamados activos en el modal
 function renderLlamadosActivos() {
     if (turnosParaSerLlamados.length === 0) return;
@@ -199,39 +229,12 @@ window.actualizarColaTurnosParaSerLlamandos = async function () {
 
 };
 
-// Actualiza el slider de colas de turnos
-window.actualizarTurnosEnColaDeAtencion = async function () {
-    const respuesta = await conectarseEndPoint('mostrarTotalTurnosPendientesPorZonasPorTiposServicios', identificadorZonaAtencion);
-    turnosEnColasDeAtencion = respuesta.DATOS || [];
-    turnosEnColasDeAtencion.forEach((turno) => {
-        const cantidades = slider.querySelectorAll(`.cola_${turno.turnoTipoServicioID}.slider-qty`);
 
-        cantidades.forEach((nodo) => {
-            nodo.textContent = turno.turnosPENDIENTES;
-        });
-    });
-};
-
-async function actualizarTablaTurnosEnAtencion() {
-    const turnosParaTablaDeAtencion = await conectarseEndPoint('atendiendoPorModulosPorZonasAtencion', identificadorZonaAtencion);
-    const nuevosTurnos = turnosParaTablaDeAtencion.DATOS || [];
-
-    const jsonNuevo = JSON.stringify(nuevosTurnos);
-    if (jsonNuevo !== ultimoEstadoTablaTurnos) {
-        turnosEnAtencion = nuevosTurnos;
-        ultimoEstadoTablaTurnos = jsonNuevo;
-    }
-
-}
 
 window.reproducirTimbreTipoDeTurno = function () {
     let tiembreGeneral = document.getElementById('timbreTurnoGeneral');
     let tiembre = document.getElementById('timbreTurnoGeneral');
 }
-
-
-
-
 
 function guardarVariablesCofiguracion() {
     var sede = document.getElementById('sedesCCSM').value;
@@ -300,16 +303,6 @@ function completarFormularioDeConfiguraciones() {
     document.getElementById('tiempoTurnosLlamadoVoz').value = localStorage.getItem('tiempoTurnosLlamadoVoz') / 1000 || '';
     document.getElementById('tiempoParaExpandirVideo').value = localStorage.getItem('tiempoParaExpandirVideo') / 1000 || '';
 }
-
-
-
-
-
-
-
-
-//de la voz
-
 
 let colaVoz = [];
 let audioEnReproduccion = false;
@@ -441,10 +434,6 @@ function reproducirAudioSecuencial(src) {
 }
 
 
-
-
-
-
 // window.hablar = function (textoParaDecir, idPersona = idAleatorio()) {
 //     if (textoParaDecir != "") {
 //         console.log("Solicitando voz para: " + textoParaDecir);
@@ -570,17 +559,17 @@ document.addEventListener('DOMContentLoaded', () => {
         controlLlamadoVoz = realizarLlamadoVoz();
         // Llanado periordico que verifica las colas de atencion y las actualiza el slider si es necesario
         setInterval(() => {
-            actualizarTurnosEnColaDeAtencion();
+            actualizarTurnosEnAtencion();
         }, tiempoRefrescarSliderColas || 3000);
         // Llamado periodico que actualiza la tabla de turnos que estan siendo atendidos
         setInterval(() => {
             actualizarTablaTurnosEnAtencion();
         }, tiempoRefrescarTablaAtencion || 2000);
         setInterval(() => {
-            renderTablaTurnosEnAtencion();
+            renderTarjetasTurnosEnColaDeAtencion();
         }, 5000);
 
-        renderSliderColasDeAtencion();        
+        renderSliderTurnosEnAtencion();
         decirDatosTurnoLlamando();
     } else {
         hablar("Por favor, configura la sede y zona de atención para continuar.");

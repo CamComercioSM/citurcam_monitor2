@@ -14,11 +14,11 @@
 </head>
 
 <body>
-  <div class="container-fluid vh-100 bg-light">
+  <div class="container-fluid vh-100 bg-light px-0">
     <!-- HEADER -->
-    <div class="row m-0 px-2 py-2 align-items-center" style="height: 45vh; min-height: 150px;">
+    <div class="row m-0 ps-2 pe-0 py-2 align-items-stretch" style="height: 47vh; min-height: 150px;">
       <!-- Slider colas (izquierda) -->
-      <div class="col-12 col-md-7 d-flex justify-content-start align-items-center">
+      <div class="col-12 col-md-7 d-flex ">
         <div id="colasSlider" class="splide w-100 h-100">
           <div class="splide__track h-100">
             <ul class="splide__list h-100" id="sliderColas">
@@ -29,34 +29,23 @@
       </div>
 
       <!-- YouTube player (derecha) -->
-      <div class="col-12 col-md-4 d-flex justify-content-end align-items-center pe-0">
-        <div class="ratio ratio-16x9 w-100" style=" min-width: 220px;">
-          <iframe id="videoPlayList" src="https://www.youtube.com/embed/brZEANdIKMU?list=PLy0Q2cGnTqFu0FolcBCIeQI9aJK3EFVeT&index=3&enablejsapi=1"
-            allowfullscreen></iframe>
+      <div class="col-12 col-md-5 d-flex justify-content-center align-items-center">
+        <div class="video-wrapper">
+          <div class="ratio ratio-16x9 w-100 m-5" style="min-width:450px;">
+            <iframe id="videoPlayList" src="https://www.youtube.com/embed/brZEANdIKMU?list=PLy0Q2cGnTqFu0FolcBCIeQI9aJK3EFVeT&index=3&enablejsapi=1"
+              allowfullscreen></iframe>
+          </div>
         </div>
       </div>
     </div>
     <!-- TABLA TURNOS EN ATENCIÓN -->
-    <div class="row m-0 p-3" style="height: 50vh; min-height: 300px;">
+    <div class="row m-0 p-3 py-3" style="height: 50vh; min-height: 250px;">
       <div class="col-12">
         <div class="card shadow-lg rounded-4 h-100 d-flex flex-column">
-          <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Turnos en Atención</h4>
-          </div>
-          <div class="card-body p-0 flex-grow-1">
-            <div id="tablaAtencionWrapper" class="h-100">
-              <table class="table table-hover align-middle mb-0">
-                <thead>
-                  <tr>
-                    <th>Módulo</th>
-                    <th>Código Turno</th>
-                    <th>Nombre</th>
-                  </tr>
-                </thead>
-                <tbody id="tablaAtencion">
-                  <!-- Renderizado por JS -->
-                </tbody>
-              </table>
+
+          <div class="card-body flex-grow-1 overflow-auto">
+            <div id="tarjetasAtencion" class="row g-3">
+              <!-- Renderizado por JS -->
             </div>
           </div>
         </div>
@@ -153,15 +142,15 @@
   </audio>
   <audio controls id="timbreTurnoGeneral" src="./public/mp3/Jetsons-doorbell.mp3"></audio>
   <audio controls id="timbreTurnoAfiliados" src="./public/mp3/iphone_notification.mp3"></audio>
-  <audio controls id="sonidoAmbiente" src="./public/mp3/sonido-ambiente.mp3" volumen="1" ></audio>
+  <audio controls id="sonidoAmbiente" src="./public/mp3/sonido-ambiente.mp3" volumen="1"></audio>
 
 
-  
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
-  
+
   <script src="js/video.js"></script>
   <script src="js/turnos.js"></script>
 
@@ -179,6 +168,3 @@
 
 
 </html>
-
-
-

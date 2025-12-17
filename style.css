@@ -29,63 +29,6 @@ body {
     color: #fff !important;
 }
 
-@media (max-width: 768px) {
-    .slider-qty {
-        font-size: 2rem;
-    }
-}
-
-:root {
-    /* valor por defecto (pantallas medianas) */
-    --filas-visibles: 4;
-}
-
-@media (max-width: 767.98px) {
-
-    /* móviles */
-    :root {
-        --filas-visibles: 4;
-    }
-}
-
-@media (min-width: 1400px) {
-
-    /* desktops grandes */
-    :root {
-        --filas-visibles: 7;
-    }
-}
-
-/* Opcional: aumentar tamaño de fuente en pantallas grandes */
-@media (min-width: 1200px) {
-
-    #tablaAtencion td,
-    #tablaAtencion th {
-        font-size: 1.1rem;
-        padding-top: 0.75rem;
-        padding-bottom: 0.75rem;
-    }
-}
-
-:root {
-  --colas-por-slide: 2;
-}
-
-@media (min-width: 1400px) {   /* pantallas grandes */
-  :root {
-    --colas-por-slide: 3;
-  }
-}
-
-@media (min-width: 1200px) {
-  .slider-title {
-    font-size: 1.4rem;
-  }
-
-  .slider-qty {
-    font-size: 3rem;
-  }
-}
 
 /* Modo "pantalla completa" simulado */
 body.video-expand-active {
@@ -100,4 +43,58 @@ body.video-expand-active #videoPlayList {
   height: 100vh;
   z-index: 9999;          /* por encima de todo */
   border: none;
+}
+
+/* fuerza altura real en toda la cadena */
+#colasSlider,
+#colasSlider .splide__track,
+#colasSlider .splide__list,
+#colasSlider .splide__slide {
+    height: 100% !important;
+}
+
+/* que el slide use flex y la card se estire */
+#colasSlider .splide__slide {
+    display: flex !important;
+    align-items: stretch !important;
+}
+
+/* tarjeta: ocupa todo el alto del slide */
+#colasSlider .card-slider {
+    width: 95% !important;
+    height: 90% !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 1.5rem;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.5rem;
+    background: linear-gradient(180deg, #fff, #f1f3f5);
+}
+
+/* tipografía grande */
+#colasSlider .slider-title {
+    font-size: clamp(1.2rem, 2.1vw, 2.1rem);
+    font-weight: 800;
+    margin-bottom: .8rem;
+}
+
+#colasSlider .slider-qty {
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-weight: 900;
+    line-height: 1;
+}
+.video-wrapper{
+  width: min(850px, 100%);   /* ancho elegante, responsive */
+  margin-right: 1.5rem;      /* aire contra el borde derecho */
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.video-wrapper .ratio{
+  border-radius: 1.25rem;    /* esquinas suaves */
+  overflow: hidden;          /* recorta el iframe */
+  box-shadow: 0 1rem 2rem rgba(0,0,0,.12);
+  background: #000;          /* por si carga lento */
 }
