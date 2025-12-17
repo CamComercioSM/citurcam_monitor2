@@ -49,16 +49,24 @@ function onPlayerReady() {
 function expandirVideo() {
     if (videoExpandido) return;
 
+
+    if (!video) {
+        console.warn('⚠️ Video no inicializado todavía');
+        return;
+    }
+
     document.body.classList.add('video-expand-active');
-    video.unMute();
-    video.setVolume(50);
+
+    if (typeof video.setVolume === 'function') {
+        video.setVolume(50);
+    }
     videoExpandido = true;
 
     setTimeout(() => {
         // Después de 1 minuto, volvemos a contraer
         console.log('⏲️ Contraer video después de expansión automática');
         contraerVideo();
-    }, 60000);  
+    }, 60000);
 
 }
 function contraerVideo() {
@@ -77,7 +85,7 @@ function controlTiempoVideoExpandido() {
             if (!videoExpandido) {
                 tiempoSinTurnos += 1000;
                 if (tiempoSinTurnos >= tiempoParaExpandirVideo) {
-                    console.log('⏲️ Expandiendo video por inactividad de turnos ' + tiempoSinTurnos );
+                    console.log('⏲️ Expandiendo video por inactividad de turnos ' + tiempoSinTurnos);
                     expandirVideo();
                 }
             }
