@@ -59,7 +59,7 @@ function expandirVideo() {
 
     if (video) {
         video.unMute();
-        video.setVolume(10);
+        video.setVolume(25);
     }
     videoExpandido = true;
 
@@ -100,10 +100,17 @@ function controlTiempoVideoExpandido() {
 
 
 
+// Si el usuario sale con ESC, reiniciamos el contador
+document.addEventListener('keydown', (event) => {
+    if (event.key === "Escape") {
+        tiempoSinTurnos = 0;
+        contraerVideo();
+    }
+});
 
 
 // Si el usuario sale con ESC, reiniciamos el contador
-document.addEventListener('keydown', (event) => {
+document.addEventListener('keyup', (event) => {
     if (event.key === "Escape") {
         tiempoSinTurnos = 0;
         contraerVideo();
