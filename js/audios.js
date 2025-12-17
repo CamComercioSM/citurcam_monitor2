@@ -82,10 +82,10 @@ function decirDatosTurnoLlamando() {
     if (turnosParaSerLlamados.length > 0) {
         if (turnoEnLlamado) {
             if (turnoEnLlamado.tipo === "Cita") {
-                $textoHablar = "Llamando a la cita " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES + ";" + turnoEnLlamado.moduloAtencionTITULO;
+                $textoHablar = "Llamando a la cita " + turnoEnLlamado.turnoCODIGOCORTO + " " + turnoEnLlamado.personaNOMBRES + "; Módulo : " + turnoEnLlamado.moduloAtencionTITULO;
                 sonarTimbreAfiliados();
             } else {
-                $textoHablar = "Llamando a " + turnoEnLlamado.personaNOMBRES + " con el turno " + turnoEnLlamado.turnoCODIGOCORTO + "; Modulo " + turnoEnLlamado.moduloAtencionTITULO + ".";
+                $textoHablar = "Llamando a " + turnoEnLlamado.personaNOMBRES + " con el turno " + turnoEnLlamado.turnoCODIGOCORTO + "; Módulo : " + turnoEnLlamado.moduloAtencionTITULO + ".";
                 sonarTimbreGeneral();
             }
             hablar($textoHablar, turnoEnLlamado.turnoCODIGOATENCION);
