@@ -51,8 +51,15 @@ function expandirVideo() {
 
     document.body.classList.add('video-expand-active');
     video.unMute();
-    video.volume(10);
+    video.setVolume(50);
     videoExpandido = true;
+
+    setTimeout(() => {
+        // Después de 1 minuto, volvemos a contraer
+        console.log('⏲️ Contraer video después de expansión automática');
+        contraerVideo();
+    }, 60000);  
+
 }
 function contraerVideo() {
     if (!videoExpandido) return;
