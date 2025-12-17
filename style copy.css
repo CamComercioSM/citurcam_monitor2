@@ -1,22 +1,27 @@
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
-  overflow: hidden; /* 🔒 Nunca scroll global */
+  overflow: hidden;
+  /* 🔒 Nunca scroll global */
 }
 
 
 
 body {
-    background: #f7f7fc;
+  background: #f7f7fc;
 }
 
 .monitor-layout {
   height: 100vh;
   display: grid;
   grid-template-rows:
-    minmax(40vh, 40vh)   /* Zona superior */
-    minmax(50vh, 55vh)   /* Zona inferior */
-    minmax(5vh, 5vh);                /* Pie */
+    minmax(40vh, 40vh)
+    /* Zona superior */
+    minmax(50vh, 55vh)
+    /* Zona inferior */
+    minmax(5vh, 5vh);
+  /* Pie */
   background: #f8f9fa;
 }
 
@@ -35,7 +40,8 @@ body {
 
 
 .zona-inferior {
-  overflow: hidden; /* ❌ scroll visible */
+  overflow: hidden;
+  /* ❌ scroll visible */
 }
 
 .contenedor-tarjetas {
@@ -43,6 +49,7 @@ body {
   overflow-y: auto;
   padding: 1rem;
 }
+
 /* Chrome, Edge, Chromium */
 .contenedor-tarjetas::-webkit-scrollbar {
   width: 0px;
@@ -99,36 +106,39 @@ body {
 
 
 .carousel-item {
-    min-height: auto; /* permite crecer verticalmente */
+  min-height: auto;
+  /* permite crecer verticalmente */
 }
 
 .slider-title {
-    font-size: auto;
+  font-size: auto;
 }
 
 .slider-qty {
-    font-size: auto;
+  font-size: auto;
 }
 
 .card-slider {
-    min-width: 200px;
+  min-width: 200px;
 }
+
 .card-slider {
-    height: auto !important;
+  height: auto !important;
 }
 
 .modal-content {
-    background: #1a233a !important;
+  background: #1a233a !important;
 }
 
 .modal-body {
-    color: #fff !important;
+  color: #fff !important;
 }
 
 
 /* Modo "pantalla completa" simulado */
 body.video-expand-active {
-  overflow: hidden; /* quita scroll al expandir el video */
+  overflow: hidden;
+  /* quita scroll al expandir el video */
 }
 
 body.video-expand-active #videoPlayList {
@@ -137,7 +147,8 @@ body.video-expand-active #videoPlayList {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 9999;          /* por encima de todo */
+  z-index: 9999;
+  /* por encima de todo */
   border: none;
 }
 
@@ -146,49 +157,64 @@ body.video-expand-active #videoPlayList {
 #colasSlider .splide__track,
 #colasSlider .splide__list,
 #colasSlider .splide__slide {
-    height: 100% !important;
+  height: 100% !important;
 }
 
 /* que el slide use flex y la card se estire */
 #colasSlider .splide__slide {
-    display: flex !important;
-    align-items: stretch !important;
+  display: flex !important;
+  align-items: stretch !important;
 }
 
 /* tarjeta: ocupa todo el alto del slide */
 #colasSlider .card-slider {
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 !important;
-    border: 0 !important;
-    border-radius: 1.5rem;
-    display: flex !important;
-    flex-direction: column;
-    justify-content: center;
-    padding: 1.5rem;
-    background: linear-gradient(180deg, #fff, #f1f3f5);
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 1.5rem;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(180deg, #fff, #f1f3f5);
 }
 
 /* tipografía grande */
 #colasSlider .slider-title {
-    font-size: clamp(1.2rem, 2.1vw, 2.1rem);
-    font-weight: 800;
-    margin-bottom: .8rem;
+  font-size: clamp(1.2rem, 2.1vw, 2.1rem);
+  font-weight: 800;
+  margin-bottom: .8rem;
 }
 
 #colasSlider .slider-qty {
-    font-size: clamp(3rem, 6vw, 5rem);
-    font-weight: 900;
-    line-height: 1;
-}
-.video-wrapper{
-  width: min(100%, 100%);   /* ancho elegante, responsive */
-  height: min(100%, 100%);    
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1;
 }
 
-.video-wrapper .ratio{
-  border-radius: 1.25rem;    /* esquinas suaves */
-  overflow: hidden;          /* recorta el iframe */
-  box-shadow: 0 1rem 2rem rgba(0,0,0,.12);
-  background: #000;          /* por si carga lento */
+.video-wrapper {
+  width: min(100%, 100%);
+  /* ancho elegante, responsive */
+  height: min(100%, 100%);
+}
+
+.video-wrapper .ratio {
+  border-radius: 1.25rem;
+  /* esquinas suaves */
+  overflow: hidden;
+  /* recorta el iframe */
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, .12);
+  background: #000;
+  /* por si carga lento */
+}
+
+
+
+.splide__slide {
+    max-width: 320px;
+}
+
+.card-slider {
+    max-width: 300px;
 }

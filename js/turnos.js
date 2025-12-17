@@ -45,46 +45,6 @@ window.idAleatorio = function () {
 }
 
 
-
-// Renderiza tabla de turnos en atención
-function renderTarjetasTurnosEnColaDeAtencion() {
-    const contenedor = document.getElementById('tarjetasAtencion');
-    contenedor.innerHTML = '';
-
-    turnosEnColasDeAtencion.forEach(turno => {
-        const titulo = turno.turnoTipoServicioTITULO ?? '-';
-        const pendientes = turno.turnosPENDIENTES ?? '-';
-
-        contenedor.innerHTML += `
-        <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-          <div class="card h-100 shadow rounded-4 border-0 tarjeta-turno">
-            <div class="card-body d-flex flex-column justify-content-between text-center p-3">
-              
-              <div>
-                <div class="text-uppercase fw-semibold text-muted small mb-1">
-                  Módulo
-                </div>
-                <div class="fw-bold fs-5">
-                  ${titulo}
-                </div>
-              </div>
-
-              <div class="mt-3">
-                <div class="text-muted small">
-                  Turnos pendientes
-                </div>
-                <div class="fw-bold display-6 text-primary">
-                  ${pendientes}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-        `;
-    });
-}
-
 // Renderiza llamados activos en el modal
 function renderLlamadosActivos() {
     if (turnosParaSerLlamados.length === 0) return;
@@ -109,10 +69,10 @@ function renderLlamadosActivos() {
         const color = colores[llamado.tipo] || 'bg-primary';
 
         cont.innerHTML += `
-      <div class="p-4 rounded-4 ${color} shadow text-white" style="min-width: 220px;">
-        <h2>${llamado.moduloAtencionTITULO}</h2>
-        <h3 class="display-4">${llamado.turnoCODIGOCORTO}</h3>
-        <p class="fs-2 mb-0">${llamado.personaNOMBRES}</p>
+      <div class="p-4 rounded-4 ${color} shadow text-white" style="min-width: 220px; font-size:5em;">
+        <h2 class="llamando_modulo" >${llamado.moduloAtencionTITULO}</h2>
+        <h3 class="display-4 llamando_codigo">${llamado.turnoCODIGOCORTO}</h3>
+        <p class="fs-2 mb-0 llamando_nombre">${llamado.personaNOMBRES}</p>
       </div>
     `;
     });
@@ -363,22 +323,25 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(() => {
             actualizarColaTurnosParaSerLlamandos();
         }, tiempoTurnosParaSerLlamados || 1000);
-        controlLLamadoModal = realizarLlamadoModal();
-        controlLlamadoVoz = realizarLlamadoVoz();
-        // Llanado periordico que verifica las colas de atencion y las actualiza el slider si es necesario
+
+        // Llanado periordico que verifica que turno esta atendiendo un modulo
+        renderSliderTurnosEnAtencion();
         setInterval(() => {
             actualizarTurnosEnAtencion();
         }, tiempoRefrescarSliderColas || 3000);
-        // Llamado periodico que actualiza la tabla de turnos que estan siendo atendidos
+
+        // Llamado periodico que actualiza la tabla de turnos pendiente por atencion
+        cargarColasAtencionParaTarjetasTurnosPendientes();
         setInterval(() => {
-            actualizarTablaTurnosEnAtencion();
-        }, tiempoRefrescarTablaAtencion || 2000);
-        setInterval(() => {
-            renderTarjetasTurnosEnColaDeAtencion();
+            actualizarTablaTurnosEnColaDeAtencion();
         }, 5000);
 
-        renderSliderTurnosEnAtencion();
-        decirDatosTurnoLlamando();
+
+        controlLLamadoModal = realizarLlamadoModal();
+        controlLlamadoVoz = realizarLlamadoVoz();
+
+        
+
     } else {
         hablar("Por favor, configura la sede y zona de atención para continuar.");
         modalConfiguraciones.show();

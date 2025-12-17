@@ -51,6 +51,7 @@ function expandirVideo() {
 
     document.body.classList.add('video-expand-active');
     video.unMute();
+    video.volume(10);
     videoExpandido = true;
 }
 function contraerVideo() {

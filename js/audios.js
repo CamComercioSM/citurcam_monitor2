@@ -48,14 +48,10 @@ window.sonarTimbreAfiliados = function () {
     timbreTurnoAfiliados.play();
 }
 
-
-
 window.reproducirTimbreTipoDeTurno = function () {
     let tiembreGeneral = document.getElementById('timbreTurnoGeneral');
     let tiembre = document.getElementById('timbreTurnoGeneral');
 }
-
-
 
 
 let colaVoz = [];
