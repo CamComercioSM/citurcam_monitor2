@@ -215,6 +215,35 @@ function completarFormularioDeConfiguraciones() {
     document.getElementById('tiempoParaExpandirVideo').value = localStorage.getItem('tiempoParaExpandirVideo') / 1000 || '';
 }
 
+function crearPollingSeguro(fn, intervalo) {
+    let ejecutando = false;
+    let activo = true;
+
+    async function ciclo() {
+        if (!activo || ejecutando) return;
+
+        ejecutando = true;
+        try {
+            await fn();
+        } catch (e) {
+            console.error(e);
+        } finally {
+            ejecutando = false;
+            if (activo) {
+                setTimeout(ciclo, intervalo);
+            }
+        }
+    }
+
+    ciclo();
+
+    return {
+        detener() { activo = false; }
+    };
+}
+
+
+
 
 // window.hablar = function (textoParaDecir, idPersona = idAleatorio()) {
 //     if (textoParaDecir != "") {
@@ -333,29 +362,25 @@ document.addEventListener('DOMContentLoaded', () => {
         modalLlamado = new bootstrap.Modal(modalEle);
         document.getElementById('formConfigPantalla').addEventListener("submit", guardarVariablesCofiguracion);
 
-        // //Llamado periodico que verifica los turnos para llamar
-        setInterval(() => {
-            actualizarColaTurnosParaSerLlamandos();
-        }, tiempoTurnosParaSerLlamados || 1000);
+        const pollingLlamados = crearPollingSeguro(
+            actualizarColaTurnosParaSerLlamandos,
+            tiempoTurnosParaSerLlamados || 8000
+        );
 
-        // Llanado periordico que verifica que turno esta atendiendo un modulo
+        const pollingAtencion = crearPollingSeguro(
+            actualizarTurnosEnAtencion,
+            tiempoRefrescarSliderColas || 6000
+        );
+
+        const pollingPendientes = crearPollingSeguro(
+            actualizarTablaTurnosEnColaDeAtencion,
+            12000
+        );
+
         renderSliderTurnosEnAtencion();
-        setInterval(() => {
-            actualizarTurnosEnAtencion();
-        }, tiempoRefrescarSliderColas || 3000);
-
-        // Llamado periodico que actualiza la tabla de turnos pendiente por atencion
         cargarColasAtencionParaTarjetasTurnosPendientes();
-        setInterval(() => {
-            actualizarTablaTurnosEnColaDeAtencion();
-        }, 5000);
-
-
         controlLLamadoModal = realizarLlamadoModal();
         controlLlamadoVoz = realizarLlamadoVoz();
-
-
-
     } else {
         hablar("Por favor, configura la sede y zona de atención para continuar.");
         modalConfiguraciones.show();
