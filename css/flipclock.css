@@ -7,12 +7,12 @@
   #reloj ES el root de FlipClock
   aquí controlamos el espacio REAL que ocupa
 */
-#reloj {
-  position: relative;
+#reloj {  
   top: 0px;
   right: 0px;
   height: 4vh;
-  padding: 10px;
+  width: auto;
+  margin-top: 2vh;
 }
 
 
@@ -278,7 +278,7 @@
 /* Ejemplos por resolución (opcional) */
 @media (min-width: 1920px) {
   :root {
-    --flip-scale: 1;
+    --flip-scale: 0.87;
   }
 }
 
