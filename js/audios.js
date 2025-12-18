@@ -15,9 +15,9 @@ function reproducirAudioCaidaInternet() {
     });
 }
 
-const sonidoAmbiente = new Audio("./public/mp3/sonido-ambiente.mp3");
+const sonidoAmbiente = new Audio("./mp3/navidad_2025_2_low.mp3");
 sonidoAmbiente.loop = true;
-sonidoAmbiente.volume = 0.1; // bajo, ambiental
+sonidoAmbiente.volume = 0.2; // bajo, ambiental
 function iniciarSonidoAmbiente() {
     sonidoAmbiente.play().catch(() => { });
 }
@@ -28,7 +28,7 @@ function detenerSonidoAmbiente() {
 }
 
 
-const timbreTurnoGeneral = new Audio("./public/mp3/Jetsons-doorbell.mp3");
+const timbreTurnoGeneral = new Audio("./mp3/Jetsons-doorbell.mp3");
 timbreTurnoGeneral.preload = "auto";
 timbreTurnoGeneral.volume = 1.0;
 window.sonarTimbreGeneral = function () {    
@@ -39,7 +39,7 @@ window.sonarTimbreGeneral = function () {
 
 
 
-const timbreTurnoAfiliados = new Audio("./public/mp3/iphone_notification.mp3");
+const timbreTurnoAfiliados = new Audio("./mp3/iphone_notification.mp3");
 timbreTurnoAfiliados.preload = "auto";
 timbreTurnoAfiliados.volume = 1.0;
 window.sonarTimbreAfiliados = function () {    

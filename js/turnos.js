@@ -121,7 +121,21 @@ window.actualizarColaTurnosParaSerLlamandos = async function () {
     if (jsonNuevo !== ultimoEstadoColaParaLlamar) {
         turnosParaSerLlamados = nuevoTurnosParaSerLlamados;
         ultimoEstadoColaParaLlamar = jsonNuevo;
+
     }
+
+    // 🔽 CONTROL DEL VIDEO SEGÚN TURNOS
+    if (turnosParaSerLlamados.length > 0) {
+        // Hay turnos → contraer video inmediatamente
+        if (videoExpandido) {
+            console.log('📞 Hay turnos → contraer video');
+            contraerVideo();
+        }
+    } else {
+        // No hay turnos → dejamos que el temporizador lo expanda
+        // (NO expandimos aquí directamente)
+    }
+
 
 
     // console.log('despues de comparar');
@@ -340,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
         controlLLamadoModal = realizarLlamadoModal();
         controlLlamadoVoz = realizarLlamadoVoz();
 
-        
+
 
     } else {
         hablar("Por favor, configura la sede y zona de atención para continuar.");

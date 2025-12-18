@@ -19,6 +19,7 @@ function onYouTubeIframeAPIReady() {
     iniciarReproduccionVideoYoutube();
 }
 
+const PLAYLIST_ID = 'PLy0Q2cGnTqFu0FolcBCIeQI9aJK3EFVeT'; // ID REAL
 let videoExpandido = false;
 var tiempoParaExpandirVideo = 30000; // 1 hora
 var tiempoSinTurnos = 0;
@@ -33,10 +34,18 @@ function iniciarReproduccionVideoYoutube() {
             controls: 0,
             rel: 0,
             modestbranding: 1,
-            playsinline: 1
+            playsinline: 1,
+
+            // 🔁 LOOP INFINITO REAL
+            listType: 'playlist',
+            list: PLAYLIST_ID,
+            playlist: PLAYLIST_ID,
+            loop: 1
+
         },
         events: {
-            onReady: onPlayerReady
+            onReady: onPlayerReady,
+            onStateChange: onPlayerStateChange
         }
     });
 }
@@ -46,6 +55,15 @@ function onPlayerReady() {
     video.mute();
     video.playVideo();
 }
+function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.ENDED) {
+        console.log('🔁 Reiniciando playlist');
+        video.playVideoAt(0);
+    }
+}
+
+
+
 function expandirVideo() {
     if (videoExpandido) return;
 
@@ -72,11 +90,19 @@ function expandirVideo() {
 }
 function contraerVideo() {
     if (!videoExpandido) return;
+
     document.body.classList.remove('video-expand-active');
-    video.mute();
+
+    if (video) {
+        video.mute();
+    }
+
     videoExpandido = false;
     tiempoSinTurnos = 0;
+
+    console.log('📺 Video contraído por actividad de turnos');
 }
+
 
 
 
@@ -98,9 +124,6 @@ function controlTiempoVideoExpandido() {
     }, 1000);
 }
 
-
-
-// Si el usuario sale con ESC, reiniciamos el contador
 document.addEventListener('keydown', (event) => {
     if (event.key === "Escape") {
         tiempoSinTurnos = 0;
@@ -108,8 +131,6 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-
-// Si el usuario sale con ESC, reiniciamos el contador
 document.addEventListener('keyup', (event) => {
     if (event.key === "Escape") {
         tiempoSinTurnos = 0;
