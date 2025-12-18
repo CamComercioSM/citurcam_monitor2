@@ -21,7 +21,7 @@ function onYouTubeIframeAPIReady() {
 
 const PLAYLIST_ID = 'PLy0Q2cGnTqFu0FolcBCIeQI9aJK3EFVeT'; // ID REAL
 let videoExpandido = false;
-var tiempoParaExpandirVideo = 30000; // 1 hora
+var tiempoParaExpandirVideo = 300000; // 1 hora
 var tiempoSinTurnos = 0;
 function iniciarReproduccionVideoYoutube() {
     if (!window.YT || !YT.Player) {
@@ -77,7 +77,7 @@ function expandirVideo() {
 
     if (video) {
         video.unMute();
-        video.setVolume(25);
+        video.setVolume(15);
     }
     videoExpandido = true;
 
