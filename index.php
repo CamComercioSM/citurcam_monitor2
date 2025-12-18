@@ -72,7 +72,6 @@
         showSeconds: true
       });
 
-
     });
   </script>
 

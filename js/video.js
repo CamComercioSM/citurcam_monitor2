@@ -15,6 +15,7 @@ function desbloquearAudioYoutube() {
 
 // del video
 let video = null;
+let ytReady = false;
 function onYouTubeIframeAPIReady() {
     iniciarReproduccionVideoYoutube();
 }
@@ -52,6 +53,7 @@ function iniciarReproduccionVideoYoutube() {
 
 
 function onPlayerReady() {
+    ytReady = true;
     video.mute();
     video.playVideo();
 }
@@ -66,6 +68,7 @@ function onPlayerStateChange(event) {
 
 function expandirVideo() {
     if (videoExpandido) return;
+    if (!ytReady || !video) return;
 
 
     if (!video) {
@@ -90,6 +93,7 @@ function expandirVideo() {
 }
 function contraerVideo() {
     if (!videoExpandido) return;
+    if (!ytReady || !video) return;
 
     document.body.classList.remove('video-expand-active');
 
@@ -108,11 +112,14 @@ function contraerVideo() {
 
 function controlTiempoVideoExpandido() {
     setInterval(() => {
+        console.log('⏲️ Expandiendo .....  ' + tiempoSinTurnos + ' ms; ' + tiempoParaExpandirVideo + ' ms.');
+        if (!ytReady) return;
+
         if (turnosParaSerLlamados.length === 0) {
             if (!videoExpandido) {
                 tiempoSinTurnos += 1000;
                 if (tiempoSinTurnos >= tiempoParaExpandirVideo) {
-                    console.log('⏲️ Expandiendo video por inactividad de turnos ' + tiempoSinTurnos);
+                    console.log('⏲️ .... por inactividad de turnos ' + tiempoSinTurnos);
                     expandirVideo();
                 }
             }
