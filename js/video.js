@@ -112,14 +112,14 @@ function contraerVideo() {
 
 function controlTiempoVideoExpandido() {
     setInterval(() => {
-        console.log('⏲️ Expandiendo .....  ' + tiempoSinTurnos + ' ms; ' + tiempoParaExpandirVideo + ' ms.');
+        //console.log('⏲️ Expandiendo .....  ' + tiempoSinTurnos + ' ms; ' + tiempoParaExpandirVideo + ' ms.');
         if (!ytReady) return;
 
         if (turnosParaSerLlamados.length === 0) {
             if (!videoExpandido) {
                 tiempoSinTurnos += 1000;
                 if (tiempoSinTurnos >= tiempoParaExpandirVideo) {
-                    console.log('⏲️ .... por inactividad de turnos ' + tiempoSinTurnos);
+                    console.log('⏲️ Expandiendo por inactividad de turnos ' + tiempoSinTurnos);
                     expandirVideo();
                 }
             }
