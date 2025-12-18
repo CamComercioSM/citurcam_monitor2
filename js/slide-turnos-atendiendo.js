@@ -30,8 +30,8 @@ async function renderSliderTurnosEnAtencion() {
             perMove: 1,
             //autoplay: true,
 
-            interval: 2500,   // tiempo entre movimientos
-            speed: 5000,       // duración del desplazamiento 👈 CLAVE
+            interval: 1479,   // tiempo entre movimientos
+            speed: 2109,       // duración del desplazamiento 👈 CLAVE
             // pauseOnHover: false,
             // pauseOnFocus: false,
             arrows: false,
