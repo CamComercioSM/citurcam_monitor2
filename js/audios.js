@@ -3,7 +3,7 @@ const audioCaidaInternet = new Audio(
 );
 
 audioCaidaInternet.preload = "auto";
-audioCaidaInternet.volume = 1.0;
+audioCaidaInternet.volume = 0.5;
 function reproducirAudioCaidaInternet() {
     if (!audioCaidaInternet.paused) {
         audioCaidaInternet.pause();
@@ -17,7 +17,7 @@ function reproducirAudioCaidaInternet() {
 
 const sonidoAmbiente = new Audio("./mp3/navidad_2025_2_low.mp3");
 sonidoAmbiente.loop = true;
-sonidoAmbiente.volume = 0.2; // bajo, ambiental
+sonidoAmbiente.volume = 0.1; // bajo, ambiental
 function iniciarSonidoAmbiente() {
     sonidoAmbiente.play().catch(() => { });
 }
