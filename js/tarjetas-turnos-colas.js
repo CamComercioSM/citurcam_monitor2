@@ -66,18 +66,18 @@ function renderTarjetasTurnosEnColaDeAtencion() {
           <div class="card h-100 shadow rounded-4 border-0 tarjeta-turno">
             <div class="card-body d-flex flex-column justify-content-between text-center p-3">
 
-              <div class="fw-bold fs-2">
+              <div class="fw-bold fs-2 titulo-cola">
                 ${cola.turnoTipoServicioTITULO ?? '-'}
               </div>
 
-              <div class="mt-3 fs-1">                
+              <div class="mt-0">                
                 <div class="fw-bold display-6 text-primary pendientes-cola"
                   id="pendientes-cola-${id}">
                   0
                 </div>
               </div>
 
-              <div class="text-muted small">${cola.turnoTipoServicioSUBTITULO ?? '-'}</div>
+              <div class="text-muted small info-cola">${cola.turnoTipoServicioSUBTITULO ?? '-'}</div>
             </div>
           </div>
         </div>`;

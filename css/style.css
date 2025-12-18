@@ -4,10 +4,10 @@
 
 html,
 body {
-  width: 100%;
   height: 100%;
   margin: 0;
   overflow: hidden;
+  /* 🔒 nunca scroll global */
   background: #f7f7fc;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -19,7 +19,13 @@ body {
 .monitor-layout {
   height: 100vh;
   display: grid;
-  grid-template-rows: 38vh 57vh 5vh;
+  grid-template-rows:
+    40vh
+    /* zona superior (slider + video) */
+    55vh
+    /* zona inferior (tarjetas) */
+    5vh;
+  /* pie */
   background: #f8f9fa;
 }
 
@@ -29,8 +35,51 @@ body {
 
 .zona-superior {
   overflow: hidden;
-  padding: 1vh 1.5vw;
+  padding: 0.5rem 1rem;
 }
+
+/* ======================================================
+   ENCABEZADO DEL MONITOR
+====================================================== */
+
+.encabezado-monitor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  height: 8vh;            /* 🔧 ALTURA DEL ENCABEZADO */
+
+  padding: 0 2vw;
+  margin: 0;
+}
+
+/* ======================================================
+   LOGO
+====================================================== */
+
+.encabezado-logo {
+  display: flex;
+  align-items: center;
+}
+
+.encabezado-logo img {
+  height: 4vh;            /* 🔧 LOGO PROPORCIONAL */
+  max-height: 100%;
+  width: auto;
+}
+
+/* ======================================================
+   RELOJ (YA CONTROLADO POR SU CSS)
+====================================================== */
+
+/*
+  NO poner width aquí
+  NO float
+  El tamaño lo controla #reloj + --flip-scale
+*/
+
+
 
 /* ======================================================
    SPLIDE – CINTA CONTINUA
@@ -39,6 +88,7 @@ body {
 #colasSlider {
   width: 100%;
   height: 100%;
+  padding: 10px;
 }
 
 #colasSlider .splide__track {
@@ -48,15 +98,16 @@ body {
 
 #colasSlider .splide__list {
   height: auto;
+  /* ⚠️ NO forzar altura */
+  transform: translateX(-2px);
 }
 
 #colasSlider .splide__slide {
   display: flex;
   align-items: stretch;
   height: auto !important;
-  width: 18vw !important;
-  min-width: 16vw;
-  max-width: 20vw;
+  max-width: 320px;
+  /* 👈 ancho real del slide */
 }
 
 /* ======================================================
@@ -64,11 +115,14 @@ body {
 ====================================================== */
 
 .card-slider {
-  width: 100%;
-  height: auto;
-  padding: 2vh 1vw;
+  width: 300px !important;
+  /* 👈 define el tamaño real */
+  height: auto !important;
+  margin: 0;
+  padding: 1.5rem;
 
-  border-radius: 2vh;
+  border: 0;
+  border-radius: 1.5rem;
   background: linear-gradient(180deg, #ffffff, #f1f3f5);
 
   display: flex;
@@ -76,7 +130,7 @@ body {
   justify-content: center;
   text-align: center;
 
-  box-shadow: 0 1.2vh 2.5vh rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.12);
 }
 
 /* ======================================================
@@ -84,71 +138,145 @@ body {
 ====================================================== */
 
 #colasSlider .slider-title {
-  font-size: clamp(1.2vh, 2.2vw, 3vh);
+  font-size: clamp(1rem, 2.8vh, 2rem);
   font-weight: 800;
-  margin-bottom: 0.6vh;
-  line-height: 1.1;
+  margin-bottom: clamp(0.3rem, 0.8vh, 0.6rem);
+  line-height: 1.15;
 }
 
 #colasSlider .slider-qty {
-  font-size: clamp(4vh, 6vw, 8vh);
+  font-size: clamp(2.6rem, 5vh, 5rem);
   font-weight: 900;
   line-height: 1;
 }
 
 #colasSlider .slider-nombre {
-  font-size: clamp(1.4vh, 2.4vw, 3.2vh);
+  font-size: clamp(1.1rem, 2vh, 2.1rem);
   font-weight: 700;
-  margin-top: 0.4vh;
+  margin-top: clamp(0.2rem, 0.6vh, 0.4rem);
   line-height: 1.15;
 }
 
+
 /* ======================================================
-   ZONA INFERIOR (TARJETAS)
+   ZONA INFERIOR (TARJETAS / LISTADOS)
 ====================================================== */
 
 .zona-inferior {
   overflow: hidden;
+  text-align: center;
 }
 
 .contenedor-tarjetas {
   height: 100%;
   overflow-y: auto;
-  padding: 1.5vh 1.5vw;
+  padding: 1rem;
+  text-align: center;
 }
 
-/* Scroll invisible */
+/* Ocultar scrollbar (Chrome / Edge) */
 .contenedor-tarjetas::-webkit-scrollbar {
   width: 0;
+  background: transparent;
 }
+
+/* Firefox */
 .contenedor-tarjetas {
   scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+
+/* ======================================================
+   TARJETA TURNOS – GRID ESTABLE
+====================================================== */
+
+.tarjeta-turno {
+  height: 20vh!important;
+  text-align: center;
 }
 
 /* ======================================================
-   NUMEROS GRANDES
+   FIX DEFINITIVO: BLOQUES 100% + CENTRADO REAL
 ====================================================== */
 
-.pendientes-cola {
-  font-size: clamp(6vh, 10vw, 10vh);
-  font-weight: 900;
-  line-height: 1;
+/* 1) Asegura que la card-body estire a sus hijos (clave) */
+.tarjeta-turno .card-body {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+
+  /* 🔑 SI NO ESTÁ EN stretch, los textos se encogen y se van a la izquierda */
+  align-items: stretch !important;
+
+  text-align: center !important;
 }
+
+/* 2) Fuerza que cada sección (título, número, info) ocupe todo el ancho */
+.tarjeta-turno .card-body>div {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 3) TÍTULO centrado siempre */
+.tarjeta-turno .titulo-cola {
+  height: 5vh;
+  text-align: center !important;
+  margin: 0 !important;
+
+  display: block !important;
+  width: 100% !important;
+
+  line-height: 2.5vh;
+  font-size: 3vh !important;
+}
+
+/* 4) CONTENEDOR del número (para no romper alineación) */
+.tarjeta-turno .pendientes-cola {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  text-align: center !important;
+
+  line-height: 1vh;
+  font-size: 10vh !important;
+}
+
+/* 5) INFO centrada siempre */
+.tarjeta-turno .info-cola {
+  height: 3vh;
+  text-align: center !important;
+  margin: 0 !important;
+
+  display: block !important;
+  width: 100% !important;
+
+  line-height:1.4vh;
+  font-size: 1.6vh !important;
+}
+
+
 
 /* ======================================================
    PIE
 ====================================================== */
 
 .zona-pie {
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(1.2vh, 1.6vw, 2vh);
+  font-size: 0.85rem;
   opacity: 0.6;
+  transition: opacity 0.3s;
+}
+
+.zona-pie:hover {
+  opacity: 1;
 }
 
 /* ======================================================
-   VIDEO
+   VIDEO (SI APLICA)
 ====================================================== */
 
 .video-wrapper {
@@ -157,10 +285,10 @@ body {
 }
 
 .video-wrapper .ratio {
-  border-radius: 2vh;
+  border-radius: 1.25rem;
   overflow: hidden;
   background: #000;
-  box-shadow: 0 1.5vh 3vh rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.12);
 }
 
 /* Modo video expandido */
@@ -174,28 +302,43 @@ body.video-expand-active #videoPlayList {
   width: 100vw;
   height: 100vh;
   z-index: 9999;
+  border: none;
 }
 
 /* ======================================================
-   MODAL LLAMADOS
-====================================================== */
-
-#llamadosActivos .llamando_modulo {
-  font-size: clamp(2vh, 3vw, 3.5vh);
-}
-
-#llamadosActivos .llamando_codigo {
-  font-size: clamp(4vh, 6vw, 7vh);
-}
-
-#llamadosActivos .llamando_nombre {
-  font-size: clamp(2.5vh, 4vw, 4.5vh);
-}
-
-/* ======================================================
-   TV SAFE
+   DESACTIVAR INTERACCIONES INNECESARIAS EN TV
 ====================================================== */
 
 .splide__slide:focus {
   outline: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ======================================================
+   MODAL DE LLAMADOS
+====================================================== */
+
+#llamadosActivos .llamando_modulo {
+  font-size: 0.7em !important;
+}
+
+#llamadosActivos .llamando_codigo {
+  font-size: 1.2em !important;
+}
+
+#llamadosActivos .llamando_nombre {
+  font-size: 1em !important;
 }
