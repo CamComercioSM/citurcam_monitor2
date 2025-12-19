@@ -85,7 +85,7 @@ function decirDatosTurnoLlamando() {
                 $textoHablar = "Llamando a " + turnoEnLlamado.personaNOMBRES + "; Módulo : " + turnoEnLlamado.moduloAtencionTITULO + ". Por favor diríjase al módulo indicado."  ;
                 sonarTimbreAfiliados();
             } else {
-                $textoHablar = "Llamando a " + turnoEnLlamado.personaNOMBRES + "; Módulo : " + turnoEnLlamado.moduloAtencionTITULO + ". Servicio : " + turnoEnLlamado.turnoServicioTITULO + "."  ;
+                $textoHablar = "Llamando a " + turnoEnLlamado.personaNOMBRES + "; Módulo : " + turnoEnLlamado.moduloAtencionTITULO + ". Servicio : " + turnoEnLlamado.turnoTipoServicioTITULO + "."  ;
                 sonarTimbreGeneral();
             }
             hablar($textoHablar, turnoEnLlamado.turnoCODIGOATENCION);
