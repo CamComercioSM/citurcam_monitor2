@@ -30,7 +30,7 @@ function detenerSonidoAmbiente() {
 
 const timbreTurnoGeneral = new Audio("./mp3/Jetsons-doorbell.mp3");
 timbreTurnoGeneral.preload = "auto";
-timbreTurnoGeneral.volume = 1.0;
+timbreTurnoGeneral.volume = 0.5;
 window.sonarTimbreGeneral = function () {    
     if (!timbreTurnoGeneral) return;
     timbreTurnoGeneral.currentTime = 0;
@@ -41,7 +41,7 @@ window.sonarTimbreGeneral = function () {
 
 const timbreTurnoAfiliados = new Audio("./mp3/iphone_notification.mp3");
 timbreTurnoAfiliados.preload = "auto";
-timbreTurnoAfiliados.volume = 1.0;
+timbreTurnoAfiliados.volume = 0.5;
 window.sonarTimbreAfiliados = function () {    
     if (!timbreTurnoAfiliados) return;
     timbreTurnoAfiliados.currentTime = 0;
