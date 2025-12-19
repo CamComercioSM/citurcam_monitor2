@@ -61,6 +61,7 @@ function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
         console.log('🔁 Reiniciando playlist');
         video.playVideoAt(0);
+        video.playVideo();
     }
 }
 
@@ -81,6 +82,7 @@ function expandirVideo() {
     if (video) {
         video.unMute();
         video.setVolume(15);
+        video.playVideo();
     }
     videoExpandido = true;
 
