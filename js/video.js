@@ -90,7 +90,7 @@ function expandirVideo() {
         // Después de 1 minuto, volvemos a contraer
         console.log('⏲️ Contraer video después de expansión automática');
         contraerVideo();
-    }, 60000);
+    }, 54321);
 
 }
 function contraerVideo() {
