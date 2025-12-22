@@ -40,7 +40,7 @@ function iniciarReproduccionVideoYoutube() {
             // 🔁 LOOP INFINITO REAL
             listType: 'playlist',
             list: PLAYLIST_ID,
-            playlist: PLAYLIST_ID,
+            //playlist: PLAYLIST_ID,
             loop: 1
 
         },
@@ -54,14 +54,31 @@ function iniciarReproduccionVideoYoutube() {
 
 function onPlayerReady() {
     ytReady = true;
+
     video.mute();
     video.playVideo();
+
+    console.log('▶️ Playlist iniciada');
 }
+
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
-        console.log('🔁 Reiniciando playlist');
-        video.playVideoAt(0);
-        video.playVideo();
+
+        const index = video.getPlaylistIndex();
+        const total = video.getPlaylist().length;
+
+        console.log('🎬 Video terminado', index + 1, '/', total);
+
+        // Si terminó el último video → reiniciar playlist
+        if (index === total - 1) {
+            console.log('🔁 Reiniciando playlist completa');
+
+            video.loadPlaylist({
+                list: PLAYLIST_ID,
+                index: 0,
+                startSeconds: 0
+            });
+        }
     }
 }
 
@@ -146,3 +163,14 @@ document.addEventListener('keyup', (event) => {
         contraerVideo();
     }
 });
+
+
+setInterval(() => {
+    if (!ytReady || !video) return;
+
+    const state = video.getPlayerState();
+    if (state === YT.PlayerState.UNSTARTED) {
+        console.warn('⚠️ Video detenido, retomando');
+        video.playVideo();
+    }
+}, 15000);
