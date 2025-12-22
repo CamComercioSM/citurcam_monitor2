@@ -8,7 +8,7 @@
   <!-- Bootstrap 5 CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
-  <link type="text/css" rel="stylesheet" href="css/style.css" >
+  <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/flipclock.css">
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -26,9 +26,9 @@
 
   <?php include 'vistas/modal-turnos-llamando.php'; ?>
 
-  <section class="zona-superior">    
+  <section class="zona-superior">
     <div class="row h-100 m-0">
-      <div class="col-8 d-flex flex-column h-100 justify-content-center">        
+      <div class="col-8 d-flex flex-column h-100 justify-content-center">
         <?php include 'vistas/slide-turnos-atendiendo.php'; ?>
       </div>
       <div class="col-4 h-100 align-items-center justify-content-center">
@@ -76,6 +76,50 @@
   </script>
 
 </body>
+
+<script>
+  (function programarRecargaEnHorasFijas() {
+
+    // Horas fijas de recarga (formato 24h)
+    const HORAS_RECARGA = [0, 8, 12, 16, 20];
+
+    function obtenerSiguienteRecarga() {
+      const ahora = new Date();
+      const hoy = new Date(ahora);
+      hoy.setMinutes(0, 0, 0);
+
+      // Buscar la próxima hora válida hoy
+      for (let hora of HORAS_RECARGA) {
+        const candidato = new Date(hoy);
+        candidato.setHours(hora);
+
+        if (candidato > ahora) {
+          return candidato;
+        }
+      }
+
+      // Si ya pasó todo hoy → primera hora de mañana
+      const manana = new Date(hoy);
+      manana.setDate(manana.getDate() + 1);
+      manana.setHours(HORAS_RECARGA[0]);
+      return manana;
+    }
+
+    const siguiente = obtenerSiguienteRecarga();
+    const tiempoEspera = siguiente.getTime() - Date.now();
+
+    console.log(
+      '🔄 Próxima recarga programada:',
+      siguiente.toLocaleString()
+    );
+
+    setTimeout(() => {
+      console.log('♻️ Recargando monitor de turnos...');
+      location.reload(true);
+    }, tiempoEspera);
+
+  })();
+</script>
 
 
 </html>
